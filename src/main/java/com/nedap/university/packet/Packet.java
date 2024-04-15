@@ -25,12 +25,4 @@ public class Packet {
   public int getSize() {
     return size;
   }
-
-  public byte[] getByteArray(){
-    byte[] byteArray = new byte[header.getByteArray().length + payload.getByteArray().length];
-    ByteBuffer buffer = ByteBuffer.wrap(byteArray);
-    buffer.put(header.getByteArray());
-    buffer.put(payload.getByteArray());
-    return buffer.array();
-  }
 }

@@ -10,7 +10,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.List;
 
-public class Client {
+public class Client extends AbstractHost {
 
   private final FileLoader fileLoader;
   private final PacketQueue queue;
@@ -25,7 +25,7 @@ public class Client {
     socket = new DatagramSocket(port);
   }
 
-  public void uploadFile(String FILE_DIR) throws InterruptedException, IOException {
+  public void uploadFile(String FILE_DIR) throws IOException, InterruptedException {
     File file = new File(FILE_DIR);
 
     List<Packet> packetList = fileLoader.extractPackets(file);
@@ -77,7 +77,6 @@ public class Client {
         System.out.println("Incorrect package received");
       }
 
-
     }
   }
 
@@ -89,7 +88,7 @@ public class Client {
     packet.getHeader().setAckNr(AckNr);
 
     // send packet
-    DatagramPacket datagramPacket = new DatagramPacket(packet.getByteArray(), packet.getByteArray().length, address, port);
+    DatagramPacket datagramPacket = new DatagramPacket(PacketParser.packetToByteArray(packet), packet.getSize(), address, port);
     socket.send(datagramPacket);
     System.out.println("Packet send with ACK: " + AckNr);
   }
@@ -98,7 +97,7 @@ public class Client {
     return fileLoader;
   }
 
-  public void getList(String s) {
+  public void getList(String DIR) {
   }
 }
 

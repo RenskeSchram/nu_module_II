@@ -59,10 +59,9 @@ public class QuoteServer {
       int clientPort = request.getPort();
 
       Packet repsonsePacket = getAckPacket(packet);
+      DatagramPacket response = new DatagramPacket(PacketParser.packetToByteArray(repsonsePacket), repsonsePacket.getSize(), clientAddress, clientPort);
 
-      DatagramPacket response = new DatagramPacket(packet.getByteArray(), packet.getByteArray().length, clientAddress, clientPort);
       socket.send(response);
-
     }
   }
 
@@ -71,6 +70,7 @@ public class QuoteServer {
 
     Header header = new Header(payload);
     header.setAckNr(request.getHeader().getAckNr());
+
     System.out.println("sending package with Ack: " + request.getHeader().getAckNr());
 
     return new Packet(header, payload);
