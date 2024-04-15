@@ -1,52 +1,70 @@
 package com.nedap.university;
 
+import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Header;
-import com.nedap.university.packet.Header.FLAG;
+import com.nedap.university.packet.Payload;
+import com.nedap.university.utils.Parameters;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FileLoader {
-  private int PACKET_DATA_SIZE = 5000;
-  private int PROTOCOL_HEADER_SIZE = 10;
+  private final int HEADER_SIZE = Header.getSize();
+  private final int MAX_PAYLOAD_SIZE = Parameters.MAX_PACKET_SIZE - HEADER_SIZE;
 
-  public void loadFile(String FILE_DIR, PacketQueue queue) throws InterruptedException {
-    File file = new File(FILE_DIR);
+  /**
+   * Extract PacketList from File.
+   *
+   * @param file file to extract from.
+   * @return List of Packets.
+   */
+  public List<Packet> extractPackets(File file) {
+    List<Packet> packetList = new ArrayList<>();
+
+    packetList.add(getHelloPacket(file));
 
     int offsetPointer = 0;
-    while (offsetPointer < file.getFileData().length / PACKET_DATA_SIZE) {
-      Packet packet = new Packet();
 
-      // add packet data
-      byte[] packetData = new byte[getPacketSize()];
-      System.arraycopy(file.getFileData(), offsetPointer * PACKET_DATA_SIZE, packetData, getHeaderSize(), PACKET_DATA_SIZE);
-      packet.setPayload(packetData);
+    while (offsetPointer < file.getFileData().length / MAX_PAYLOAD_SIZE) {
+      // add packet payload
+      byte[] payloadByteArray;
+      boolean isFinalPacket;
 
-      // add protocol header
-      Header header = new Header(PROTOCOL_HEADER_SIZE);
-      header.setPacketDataSize(PACKET_DATA_SIZE);
-      header.setOffsetPointer(offsetPointer);
-      header.setFlag(FLAG.DATA);
-      packet.setHeader(header);
+      if (offsetPointer * MAX_PAYLOAD_SIZE <= file.getFileData().length) {
+        payloadByteArray = new byte[HEADER_SIZE + MAX_PAYLOAD_SIZE];
+        isFinalPacket = false;
+      } else {
+        payloadByteArray = new byte[HEADER_SIZE + file.getFileData().length % MAX_PAYLOAD_SIZE];
+        isFinalPacket = true;
+      }
 
-      System.out.println("adding file to queue");
-      queue.putPacket(packet);
+      System.arraycopy(file.getFileData(), offsetPointer * MAX_PAYLOAD_SIZE, payloadByteArray,
+          0, payloadByteArray.length);
+
+      Payload payload = new Payload(payloadByteArray, offsetPointer, isFinalPacket);
+      Header header = new Header(payload);
+
+      packetList.add(new Packet(header, payload));
 
       offsetPointer ++;
     }
+
+    System.out.println(packetList.size() + " added packets to the queue");
+    return packetList;
   }
 
-  private int getHeaderSize() {
-    return PROTOCOL_HEADER_SIZE;
+  private Packet getHelloPacket(File file) {
+    Payload payload = new Payload(file.getFILE_DIR().getBytes(), 0 , false);
+    Header header = new Header(payload);
+    header.setFlag(FLAG.HELLO);
+
+    return new Packet(header, payload);
   }
 
-  private int getPacketSize() {
-    return PROTOCOL_HEADER_SIZE + PACKET_DATA_SIZE;
-  }
-
-  public static void main(String[] args) throws InterruptedException {
+  public static void main(String[] args) {
     FileLoader fileLoader= new FileLoader();
-    PacketQueue queue = new PacketQueue();
-    fileLoader.loadFile("example_files/tiny.pdf", queue);
-
+    File file = new File("example_files/tiny.pdf");
+    fileLoader.extractPackets(file);
   }
 
 }

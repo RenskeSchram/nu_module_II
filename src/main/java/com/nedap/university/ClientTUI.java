@@ -25,7 +25,7 @@ public class ClientTUI {
     InetAddress hostname = null;
     boolean validHostname = false;
     while (!validHostname) {
-      System.out.print("hostname:     \n");
+//      System.out.print("hostname:     \n");
       try {
         //hostname = InetAddress.getByName(scanner.nextLine());
         hostname = InetAddress.getByName("172.16.1.1");
@@ -39,7 +39,7 @@ public class ClientTUI {
     int port = -1;
     boolean validPort = false;
     while (!validPort) {
-      System.out.print("port:       \n");
+//      System.out.print("port:       \n");
       try {
         //port = scanner.nextInt();
         port = 8080;
@@ -59,10 +59,7 @@ public class ClientTUI {
       DatagramPacket response = new DatagramPacket(buffer, buffer.length);
       socket.receive(response);
 
-      String quote = new String(buffer, 0, response.getLength());
-
-      System.out.println(quote);
-      System.out.println();
+      System.out.println("PI Server is ACTIVE");
 
     } catch (SocketTimeoutException ex) {
       System.out.println("Timeout error: " + ex.getMessage());
@@ -95,7 +92,7 @@ public class ClientTUI {
       String[] protocol = systemTuiInput.split(" ");
       System.out.println(systemTuiInput);
 
-      switch (protocol[0]) {
+      switch (protocol[0].toLowerCase()) {
         case "send":
           if (protocol.length == 2) {
             System.out.println("sending file");
@@ -104,6 +101,29 @@ public class ClientTUI {
           } else {
             System.out.println("Invalid input length, try again.");
           }
+          break;
+        case "get":
+          if (protocol.length == 2) {
+            System.out.println("retrieving file file");
+            protocol[1] = "example_files/tiny.pdf";
+            client.downloadFile(protocol[1]);
+          } else {
+            System.out.println("Invalid input length, try again.");
+          }
+          break;
+        case "list":
+          if (protocol.length == 2) {
+            System.out.println("sending file");
+            protocol[1] = "example_files/tiny.pdf";
+            client.getList(protocol[1]);
+          } else {
+            System.out.println("Invalid input length, try again.");
+          }
+          break;
+        default:
+          System.out.println("Invalid input, try again.");
+          System.out.println(this);
+
       }
   }
 
@@ -111,7 +131,10 @@ public class ClientTUI {
   public String toString() {
     return
         "Client TUI commands:\n" +
-            "   DISCONNECT ..................disconnect and stop \n" +
+            "   SEND <src_dir> ............. send file \n" +
+            "   GET  <src_dir> ............. get file \n" +
+            "   LIST <src_dir> ............. get filenames stored directory \n" +
+            "   DISCONNECT ................. disconnect and stop \n" +
             "   HELP ....................... help (this menu) \n";
   }
 }

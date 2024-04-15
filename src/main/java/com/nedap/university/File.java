@@ -11,6 +11,8 @@ public class File {
   private final String FILE_DIR;
   private byte[] fileData;
 
+  //TODO: nio.file files path
+
   File(String FILE_DIR) {
     this.FILE_DIR = FILE_DIR;
     getByteArrayFromFile();
@@ -30,6 +32,10 @@ public class File {
 
   public byte[] getFileData() {
     return fileData;
+  }
+
+  public String getFILE_DIR() {
+    return FILE_DIR;
   }
 
   public static void main(String[] args) {

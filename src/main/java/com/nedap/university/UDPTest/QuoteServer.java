@@ -1,5 +1,10 @@
 package com.nedap.university.UDPTest;
 
+import com.nedap.university.packet.Header;
+import com.nedap.university.packet.Packet;
+import com.nedap.university.packet.Payload;
+import com.nedap.university.utils.PacketParser;
+import com.nedap.university.utils.Parameters;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -44,23 +49,31 @@ public class QuoteServer {
 
   private void service() throws IOException {
     while (true) {
-      DatagramPacket request = new DatagramPacket(new byte[1024], 1024);
+      DatagramPacket request = new DatagramPacket(new byte[Parameters.MAX_PACKET_SIZE], Parameters.MAX_PACKET_SIZE);
       socket.receive(request);
-      System.out.println("received package with length: " + request.getLength());
-      System.out.println(Arrays.toString(request.getData()));
+      System.out.println("received package");
 
-      String quote = getRandomQuote();
-      byte[] buffer = quote.getBytes();
+      Packet packet = PacketParser.byteArrayToPacket(request.getData());
 
       InetAddress clientAddress = request.getAddress();
-      System.out.println(clientAddress.getHostAddress());
       int clientPort = request.getPort();
-      System.out.println(clientPort);
 
-      DatagramPacket response = new DatagramPacket(buffer, buffer.length, clientAddress, clientPort);
+      Packet repsonsePacket = getAckPacket(packet);
+
+      DatagramPacket response = new DatagramPacket(packet.getByteArray(), packet.getByteArray().length, clientAddress, clientPort);
       socket.send(response);
-      System.out.println("sending package with length: " + response.getLength());
+
     }
+  }
+
+  private Packet getAckPacket(Packet request) {
+    Payload payload = new Payload(new byte[1], 0, true);
+
+    Header header = new Header(payload);
+    header.setAckNr(request.getHeader().getAckNr());
+    System.out.println("sending package with Ack: " + request.getHeader().getAckNr());
+
+    return new Packet(header, payload);
   }
 
   private void loadQuotesFromFile(String quoteFile) throws IOException {
@@ -76,8 +89,7 @@ public class QuoteServer {
 
   private String getRandomQuote() {
     int randomIndex = random.nextInt(listQuotes.size());
-    String randomQuote = listQuotes.get(randomIndex);
-    return randomQuote;
+    return listQuotes.get(randomIndex);
   }
 }
 

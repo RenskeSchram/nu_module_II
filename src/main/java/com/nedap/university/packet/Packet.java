@@ -4,8 +4,27 @@ import java.nio.ByteBuffer;
 
 public class Packet {
 
-  private Header header;
-  private Payload payload;
+  private final Header header;
+  private final Payload payload;
+  private final int size;
+
+  public Packet(Header header, Payload payload) {
+    this.header = header;
+    this.payload = payload;
+    this.size = Header.getSize() + payload.getSize();
+  }
+
+  public Header getHeader() {
+    return header;
+  }
+
+  public Payload getPayload() {
+    return payload;
+  }
+
+  public int getSize() {
+    return size;
+  }
 
   public byte[] getByteArray(){
     byte[] byteArray = new byte[header.getByteArray().length + payload.getByteArray().length];
@@ -13,13 +32,5 @@ public class Packet {
     buffer.put(header.getByteArray());
     buffer.put(payload.getByteArray());
     return buffer.array();
-  }
-
-  public void setHeader(Header header) {
-    this.header = header;
-  }
-
-  public void setPayload(byte[] payload) {
-    this.payload = new Payload(payload);
   }
 }
