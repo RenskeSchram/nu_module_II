@@ -4,7 +4,13 @@ import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Payload;
+import com.nedap.university.utils.PacketParser;
 import com.nedap.university.utils.Parameters;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,33 +18,33 @@ public class FileLoader {
   private final int HEADER_SIZE = Header.getSize();
   private final int MAX_PAYLOAD_SIZE = Parameters.MAX_PACKET_SIZE - HEADER_SIZE;
 
+
   /**
    * Extract PacketList from File.
    *
-   * @param file file to extract from.
+   * @param file_path file to extract from.
    * @return List of Packets.
    */
-  public List<Packet> extractPackets(File file) {
+  public List<Packet> extractPackets(Path file_path) throws IOException {
     List<Packet> packetList = new ArrayList<>();
-
-    packetList.add(getHelloPacket(file));
-
     int offsetPointer = 0;
 
-    while (offsetPointer < file.getFileData().length / MAX_PAYLOAD_SIZE) {
+    long fileLength = Files.size(file_path);
+
+    while (offsetPointer < fileLength / MAX_PAYLOAD_SIZE) {
       // add packet payload
       byte[] payloadByteArray;
       boolean isFinalPacket;
 
-      if (offsetPointer * MAX_PAYLOAD_SIZE <= file.getFileData().length) {
+      if (offsetPointer * MAX_PAYLOAD_SIZE <= fileLength) {
         payloadByteArray = new byte[HEADER_SIZE + MAX_PAYLOAD_SIZE];
         isFinalPacket = false;
       } else {
-        payloadByteArray = new byte[HEADER_SIZE + file.getFileData().length % MAX_PAYLOAD_SIZE];
+        payloadByteArray = new byte[(int) (HEADER_SIZE + fileLength % MAX_PAYLOAD_SIZE)];
         isFinalPacket = true;
       }
 
-      System.arraycopy(file.getFileData(), offsetPointer * MAX_PAYLOAD_SIZE, payloadByteArray,
+      System.arraycopy(Files.readAllBytes(file_path), offsetPointer * MAX_PAYLOAD_SIZE, payloadByteArray,
           0, payloadByteArray.length);
 
       Payload payload = new Payload(payloadByteArray, offsetPointer, isFinalPacket);
@@ -53,18 +59,19 @@ public class FileLoader {
     return packetList;
   }
 
-  private Packet getHelloPacket(File file) {
-    Payload payload = new Payload(file.getFILE_DIR().getBytes(), 0 , false);
+
+  public Packet getInitPacket(String dstDir, long size) {
+    Payload payload = new Payload(PacketParser.getPayloadAsByteArray(dstDir, size), 0 , false);
     Header header = new Header(payload);
     header.setFlag(FLAG.HELLO);
 
     return new Packet(header, payload);
   }
 
-  public static void main(String[] args) {
+
+  public static void main(String[] args) throws IOException {
     FileLoader fileLoader= new FileLoader();
-    File file = new File("example_files/tiny.pdf");
-    fileLoader.extractPackets(file);
+    fileLoader.extractPackets(Paths.get("example_files/tiny.pdf"));
   }
 
 }

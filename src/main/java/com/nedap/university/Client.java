@@ -1,6 +1,9 @@
 package com.nedap.university;
 
+import com.nedap.university.packet.Header;
+import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
+import com.nedap.university.packet.Payload;
 import com.nedap.university.utils.PacketParser;
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;
@@ -8,7 +11,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.nio.file.Files;
+
 
 public class Client extends AbstractHost {
 
@@ -25,10 +33,12 @@ public class Client extends AbstractHost {
     socket = new DatagramSocket(port);
   }
 
-  public void uploadFile(String FILE_DIR) throws IOException, InterruptedException {
-    File file = new File(FILE_DIR);
+  public void uploadFile(String src_dir, String dst_dir) throws IOException, InterruptedException {
+    Path file_path = Paths.get(src_dir);
 
-    List<Packet> packetList = fileLoader.extractPackets(file);
+    queue.packetQueue.add(fileLoader.getInitPacket(dst_dir, Files.size(file_path)));
+
+    List<Packet> packetList = fileLoader.extractPackets(file_path);
     for (Packet packet : packetList) {
       queue.putPacket(packet);
     }
@@ -36,6 +46,7 @@ public class Client extends AbstractHost {
     service();
   }
 
+  @Override
   public void downloadFile(String FILE_DIR) {
     // send GET packet
 
@@ -76,7 +87,6 @@ public class Client extends AbstractHost {
       } else {
         System.out.println("Incorrect package received");
       }
-
     }
   }
 

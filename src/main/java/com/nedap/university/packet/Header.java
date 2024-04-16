@@ -89,11 +89,12 @@ public class Header {
   }
 
   public void setFlag(FLAG flag) {
-    byteArray[10] = (byte) (byteArray[8] | (1 << flag.byteLocation));
+    flags |= (byte) (1 << flag.byteLocation);
+    byteArray[10] |= (byte) (1 << flag.byteLocation);
   }
 
   public boolean isFlagSet(FLAG flag) {
-    return (byteArray[10] & (1 << flag.byteLocation)) != 0;
+    return (flags & (1 << flag.byteLocation)) != 0;
   }
 
   public void setWithDataPayload(Payload payload) {
