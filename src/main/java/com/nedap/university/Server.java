@@ -4,7 +4,6 @@ import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Payload;
-import com.nedap.university.utils.PacketParser;
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -70,10 +69,11 @@ public class Server extends AbstractHost {
       byte[] buffer = new byte[Parameters.MAX_PACKET_SIZE];
       DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
       socket.receive(receivedPacket);
+      Packet packet = new Packet(receivedPacket.getData());
 
       // Receive packet
-      if (expectedAck == PacketParser.getAckNr(receivedPacket.getData())) {
-        handleDatagramPacket(receivedPacket);
+      if (expectedAck == packet.getHeader().getAckNr()) {
+        handlePacket(packet);
       }
     }
   }
@@ -84,16 +84,16 @@ public class Server extends AbstractHost {
     packet.getHeader().setAckNr(AckNr);
 
     // send packet
-    DatagramPacket datagramPacket = new DatagramPacket(PacketParser.packetToByteArray(packet), packet.getSize(), address, port);
+    DatagramPacket datagramPacket = new DatagramPacket(packet.getByteArray(), packet.getSize(), address, port);
     socket.send(datagramPacket);
     System.out.println("Packet send with ACK: " + AckNr);
   }
 
+  public void handlePacket(Packet packet) throws IOException, InterruptedException {
+    Header header = packet.getHeader();
+    Payload payload = packet.getPayload();
 
-  public void handleDatagramPacket(DatagramPacket datagramPacket)
-      throws IOException, InterruptedException {
-    byte flags = PacketParser.getFlagByte(datagramPacket.getData());
-    byte[] packet = datagramPacket.getData();
+    byte flags = header.getFlagByte();
 
     switch (flags) {
       // HELLO + DATA
@@ -101,14 +101,14 @@ public class Server extends AbstractHost {
         // send ACK
         sendAck();
         // initialize new file buffer to store data
-        fileBuffer.initFileBuffer(packet);
+        fileBuffer.initFileBuffer(payload);
 
         // HELLO + GET
       case (byte) 0b00000101:
         // send ACK
         sendAck();
         // Parse File
-        uploadFile(PacketParser.getStringPayload(packet)[0]);
+        //uploadFile(PacketParser.getStringPayload(packetBytes)[0]);
         // Send HELLO + DATA message
         sendHelloPacket();
 
@@ -122,14 +122,14 @@ public class Server extends AbstractHost {
       case (byte) 0b00000010:
         sendAck();
 
-        fileBuffer.receivePacket(packet);
+        fileBuffer.receivePacket(payload);
 
         // DATA + FIN
       case (byte) 0b00100010:
         sendAck();
 
-        fileBuffer.receivePacket(packet);
-        fileBuffer.receiveFin(packet);
+        fileBuffer.receivePacket(payload);
+        fileBuffer.receiveFin(payload);
 
 
         // ACK

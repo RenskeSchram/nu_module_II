@@ -1,7 +1,7 @@
 package com.nedap.university;
 
 import com.nedap.university.packet.Packet;
-import com.nedap.university.utils.PacketParser;
+import com.nedap.university.packet.Payload;
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -28,23 +28,23 @@ public class FileBuffer {
     savedPackets = new HashMap<>();
   }
 
-  public void initFileBuffer(byte[] packet) {
-    String[] stringPayload = PacketParser.getStringPayload(packet);
-    if (stringPayload != null & !isInitialized) {
-      this.filePath = stringPayload[0];
-      this.fileSize = Integer.parseInt(stringPayload[1]);
+  public void initFileBuffer(Payload payload) {
+    String[] stringArray = payload.getStringArray();
+    if (stringArray != null & !isInitialized) {
+      this.filePath = stringArray[0];
+      this.fileSize = Integer.parseInt(stringArray[1]);
       byteBuffer = ByteBuffer.allocate(fileSize);
       isInitialized = true;
     }
   }
 
-  public void receivePacket(byte[] packet) {
-    int offsetPointer = PacketParser.getOffsetPointer(packet);
+  public void receivePacket(Payload payload) {
+    int offsetPointer = payload.getOffsetPointer();
     if (expectedOffsetPointer == offsetPointer) {
-      writePacketsToBuffer(PacketParser.getPayload(packet), offsetPointer);
+      writePacketsToBuffer(payload.getByteArray(), offsetPointer);
       checkSavedPackets();
     } else {
-      addPacketToSavedPackets(PacketParser.getPayload(packet), offsetPointer);
+      addPacketToSavedPackets(payload.getByteArray(), offsetPointer);
     }
   }
 
@@ -110,8 +110,8 @@ public class FileBuffer {
     }
   }
 
-  public void receiveFin(byte[] packet) {
-    finalOffsetPointer = PacketParser.getOffsetPointer(packet);
+  public void receiveFin(Payload payload) {
+    finalOffsetPointer = payload.getOffsetPointer();
   }
 
   public int getFileSize() {

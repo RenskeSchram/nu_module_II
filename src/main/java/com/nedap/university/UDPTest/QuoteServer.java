@@ -3,7 +3,6 @@ package com.nedap.university.UDPTest;
 import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Payload;
-import com.nedap.university.utils.PacketParser;
 import com.nedap.university.utils.Parameters;
 import java.io.*;
 import java.net.*;
@@ -53,13 +52,13 @@ public class QuoteServer {
       socket.receive(request);
       System.out.println("received package");
 
-      Packet packet = PacketParser.byteArrayToPacket(request.getData());
+      Packet packet = new Packet(request.getData());
 
       InetAddress clientAddress = request.getAddress();
       int clientPort = request.getPort();
 
       Packet repsonsePacket = getAckPacket(packet);
-      DatagramPacket response = new DatagramPacket(PacketParser.packetToByteArray(repsonsePacket), repsonsePacket.getSize(), clientAddress, clientPort);
+      DatagramPacket response = new DatagramPacket(repsonsePacket.getByteArray(), repsonsePacket.getSize(), clientAddress, clientPort);
 
       socket.send(response);
     }

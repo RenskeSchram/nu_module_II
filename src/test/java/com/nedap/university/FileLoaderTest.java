@@ -1,7 +1,6 @@
 package com.nedap.university;
 
 import com.nedap.university.packet.Header.FLAG;
-import com.nedap.university.utils.PacketParser;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,7 +61,7 @@ public class FileLoaderTest {
     assertTrue(initPacket.getHeader().isFlagSet(FLAG.HELLO));
     assertTrue(initPacket.getHeader().isFlagSet(FLAG.DATA));
 
-    String[] payloadStrings = PacketParser.getStringPayload(PacketParser.packetToByteArray(initPacket));
+    String[] payloadStrings = initPacket.getPayload().getStringArray();
     assert payloadStrings != null;
     assertEquals(TEST_DST_FILE_PATH, payloadStrings[0]);
   }

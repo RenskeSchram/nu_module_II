@@ -1,8 +1,5 @@
 package com.nedap.university.packet;
-import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Header.FLAG;
-import com.nedap.university.packet.Payload;
-import com.nedap.university.utils.Parameters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,11 +36,11 @@ public class HeaderTest {
 
   @Test
   void testSetAndGetFlags() {
-    header.setFlags((byte) 0b00000001);
+    header.setFlagByte((byte) 0b00000001);
     assertTrue(header.isFlagSet(Header.FLAG.HELLO));
 
     header.setFlag(FLAG.GET);
-    assertEquals((byte) 0b00000101, header.getFlags());
+    assertEquals((byte) 0b00000101, header.getFlagByte());
     assertTrue(header.isFlagSet(FLAG.GET));
   }
 

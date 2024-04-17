@@ -2,6 +2,7 @@ package com.nedap.university;
 
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
+import com.nedap.university.packet.Payload;
 import com.nedap.university.utils.*;
 import java.io.File;
 import java.util.List;
@@ -44,7 +45,7 @@ public class FileBufferTest {
   @Test
   public void testInitFileBuffer() throws IOException {
     Packet initPacket = fileLoader.getInitPacket(TEST_DST_FILE_PATH, Files.size(Paths.get(TEST_SRC_FILE_PATH)));
-    fileBuffer.initFileBuffer(PacketParser.packetToByteArray(initPacket));
+    fileBuffer.initFileBuffer(initPacket.getPayload());
     assertTrue(initPacket.getHeader().isFlagSet(FLAG.HELLO));
     assertTrue(initPacket.getHeader().isFlagSet(FLAG.DATA));
 
@@ -57,22 +58,22 @@ public class FileBufferTest {
   @Test
   public void testReceivePacket() throws IOException {
     testInitFileBuffer();
-    byte[] packet = PacketParser.packetToByteArray(packetList.get(0));
-    fileBuffer.receivePacket(packet);
+    Packet packet = packetList.get(0);
+    fileBuffer.receivePacket(packet.getPayload());
 
-    byte[] bufferPayload = new byte[PacketParser.getPayload(packet).length];
-    System.arraycopy(fileBuffer.getByteBuffer().array(), 0, bufferPayload, 0, PacketParser.getPayload(packet).length);
+    byte[] bufferPayload = new byte[packet.getPayload().getSize()];
+    System.arraycopy(fileBuffer.getByteBuffer().array(), 0, bufferPayload, 0, packet.getPayload().getSize());
 
     // Assert that the payloads are equal
-    assertArrayEquals(PacketParser.getPayload(packet), bufferPayload);
+    assertArrayEquals(packet.getPayload().getByteArray(), bufferPayload);
   }
 
   @Test
   public void testReceiveFin() throws IOException {
     testInitFileBuffer();
-    byte[] packet = PacketParser.packetToByteArray(packetList.get(packetList.size()-1));
-    fileBuffer.receiveFin(packet);
-    assertEquals(PacketParser.getOffsetPointer(packet), fileBuffer.getFinalOffsetPointer());
+    Payload payload = packetList.get(packetList.size()-1).getPayload();
+    fileBuffer.receiveFin(payload);
+    assertEquals(payload.getOffsetPointer(), fileBuffer.getFinalOffsetPointer());
   }
 
   @Test
@@ -93,7 +94,7 @@ public class FileBufferTest {
     int writtenPayloadSize = 0;
 
     for (Packet packet : packetList) {
-      fileBuffer.receivePacket(PacketParser.packetToByteArray(packet));
+      fileBuffer.receivePacket(packet.getPayload());
       writtenPayloadSize += packet.getPayload().getSize();
     }
     fileBuffer.writeBufferToFile();

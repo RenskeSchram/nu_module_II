@@ -25,7 +25,7 @@ public class ClientTUI {
     InetAddress hostname = null;
     boolean validHostname = false;
     while (!validHostname) {
-//      System.out.print("hostname:     \n");
+      System.out.print("hostname:     \n");
       try {
         //hostname = InetAddress.getByName(scanner.nextLine());
         hostname = InetAddress.getByName("172.16.1.1");
@@ -39,7 +39,7 @@ public class ClientTUI {
     int port = -1;
     boolean validPort = false;
     while (!validPort) {
-//      System.out.print("port:       \n");
+      System.out.print("port:       \n");
       try {
         //port = scanner.nextInt();
         port = 8080;
@@ -90,14 +90,14 @@ public class ClientTUI {
 
   private void handleClientInput(String systemTuiInput) throws InterruptedException, IOException {
       String[] protocol = systemTuiInput.split(" ");
-      System.out.println(systemTuiInput);
 
       switch (protocol[0].toLowerCase()) {
         case "send":
-          if (protocol.length == 2) {
+          if (protocol.length == 3) {
             System.out.println("sending file");
             protocol[1] = "example_files/tiny.pdf";
-            client.uploadFile(protocol[1]);
+            protocol[2] = "example_files/tiny_output.pdf";
+            client.uploadFile(protocol[1], protocol[2]);
           } else {
             System.out.println("Invalid input length, try again.");
           }

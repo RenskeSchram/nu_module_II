@@ -4,7 +4,7 @@ import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Payload;
-import com.nedap.university.utils.PacketParser;
+
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -17,8 +17,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.nio.file.Files;
 
-
-public class Client extends AbstractHost {
+public class Client {
 
   private final FileLoader fileLoader;
   private final PacketQueue queue;
@@ -46,7 +45,6 @@ public class Client extends AbstractHost {
     service();
   }
 
-  @Override
   public void downloadFile(String FILE_DIR) {
     // send GET packet
 
@@ -67,7 +65,7 @@ public class Client extends AbstractHost {
       socket.receive(response);
       Thread.sleep(500);
 
-      Packet receivedPacket = PacketParser.byteArrayToPacket(response.getData());
+      Packet receivedPacket = new Packet(response.getData());
       System.out.println("Received packet with ACK: " + receivedPacket.getHeader().getAckNr());
 
       if (AckNr == receivedPacket.getHeader().getAckNr()) {
@@ -98,7 +96,7 @@ public class Client extends AbstractHost {
     packet.getHeader().setAckNr(AckNr);
 
     // send packet
-    DatagramPacket datagramPacket = new DatagramPacket(PacketParser.packetToByteArray(packet), packet.getSize(), address, port);
+    DatagramPacket datagramPacket = new DatagramPacket(packet.getByteArray(), packet.getSize(), address, port);
     socket.send(datagramPacket);
     System.out.println("Packet send with ACK: " + AckNr);
   }

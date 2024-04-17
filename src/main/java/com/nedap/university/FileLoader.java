@@ -1,11 +1,12 @@
 package com.nedap.university;
 
-import static com.nedap.university.utils.Parameters.*;
+import static com.nedap.university.utils.Parameters.HEADER_SIZE;
+import static com.nedap.university.utils.Parameters.MAX_PAYLOAD_SIZE;
+
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Payload;
-import com.nedap.university.utils.PacketParser;
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,10 +31,9 @@ public class FileLoader {
     try (FileChannel fileChannel = FileChannel.open(file_path, StandardOpenOption.READ)) {
       long fileLength = fileChannel.size();
       int offsetPointer = 0;
-      
 
-      while (offsetPointer < Math.ceil((double) fileLength / MAX_PAYLOAD_SIZE)) {
-        int remainingBytes = (int) Math.min(fileLength - (long) offsetPointer * MAX_PAYLOAD_SIZE, MAX_PAYLOAD_SIZE);
+      while (offsetPointer < Math.ceil((double) fileLength / Parameters.MAX_PAYLOAD_SIZE)) {
+        int remainingBytes = (int) Math.min(fileLength - offsetPointer * Parameters.MAX_PAYLOAD_SIZE, Parameters.MAX_PAYLOAD_SIZE);
 
         ByteBuffer buffer = ByteBuffer.allocate(remainingBytes);
         fileChannel.read(buffer);
@@ -42,7 +42,7 @@ public class FileLoader {
         byte[] payloadByteArray = new byte[remainingBytes];
         buffer.get(payloadByteArray);
 
-        boolean isFinalPacket = (offsetPointer + 1) * MAX_PAYLOAD_SIZE >= fileLength;
+        boolean isFinalPacket = (offsetPointer + 1) * Parameters.MAX_PAYLOAD_SIZE >= fileLength;
         Payload payload = new Payload(payloadByteArray, offsetPointer, isFinalPacket);
         Header header = new Header(payload);
 
@@ -57,7 +57,7 @@ public class FileLoader {
   }
 
   public Packet getInitPacket(String dstDir, long size) {
-    Payload payload = new Payload(PacketParser.getPayloadAsByteArray(dstDir, size), 0 , false);
+    Payload payload = new Payload(dstDir, size, false);
     Header header = new Header(payload);
     header.setFlag(FLAG.HELLO);
 
