@@ -1,8 +1,6 @@
 package com.nedap.university;
 
-import static com.nedap.university.utils.Parameters.HEADER_SIZE;
-import static com.nedap.university.utils.Parameters.MAX_PAYLOAD_SIZE;
-
+import static com.nedap.university.utils.Parameters.*;
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Header;
@@ -11,9 +9,11 @@ import com.nedap.university.utils.PacketParser;
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,35 +26,35 @@ public class FileLoader {
    */
   public List<Packet> extractPackets(Path file_path) throws IOException {
     List<Packet> packetList = new ArrayList<>();
-    int offsetPointer = 0;
-    long fileLength = Files.size(file_path);
-    while (offsetPointer <   (int) Math.ceil((double) fileLength / MAX_PAYLOAD_SIZE)){
-      // add packet payload
-      byte[] payloadByteArray;
-      boolean isFinalPacket;
-      if (((long) offsetPointer + 1) * MAX_PAYLOAD_SIZE <= fileLength) {
-        payloadByteArray = new byte[MAX_PAYLOAD_SIZE];
 
-        isFinalPacket = false;
-      } else {
-        payloadByteArray = new byte[(int) (fileLength % MAX_PAYLOAD_SIZE)];
-        isFinalPacket = true;
+    try (FileChannel fileChannel = FileChannel.open(file_path, StandardOpenOption.READ)) {
+      long fileLength = fileChannel.size();
+      int offsetPointer = 0;
+      
+
+      while (offsetPointer < Math.ceil((double) fileLength / MAX_PAYLOAD_SIZE)) {
+        int remainingBytes = (int) Math.min(fileLength - (long) offsetPointer * MAX_PAYLOAD_SIZE, MAX_PAYLOAD_SIZE);
+
+        ByteBuffer buffer = ByteBuffer.allocate(remainingBytes);
+        fileChannel.read(buffer);
+        buffer.flip();
+
+        byte[] payloadByteArray = new byte[remainingBytes];
+        buffer.get(payloadByteArray);
+
+        boolean isFinalPacket = (offsetPointer + 1) * MAX_PAYLOAD_SIZE >= fileLength;
+        Payload payload = new Payload(payloadByteArray, offsetPointer, isFinalPacket);
+        Header header = new Header(payload);
+
+        packetList.add(new Packet(header, payload));
+
+        offsetPointer++;
       }
-      System.arraycopy(Files.readAllBytes(file_path), offsetPointer * MAX_PAYLOAD_SIZE, payloadByteArray,
-          0, payloadByteArray.length);
-
-      Payload payload = new Payload(payloadByteArray, offsetPointer, isFinalPacket);
-      Header header = new Header(payload);
-
-      packetList.add(new Packet(header, payload));
-
-      offsetPointer ++;
     }
 
-    System.out.println(packetList.size() + " added packets to the queue");
+    System.out.println(packetList.size() + " packets added to the queue");
     return packetList;
   }
-
 
   public Packet getInitPacket(String dstDir, long size) {
     Payload payload = new Payload(PacketParser.getPayloadAsByteArray(dstDir, size), 0 , false);

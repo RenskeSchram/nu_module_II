@@ -21,13 +21,13 @@ public class FileLoaderTest {
 
   private FileLoader fileLoader;
   private Path testFile;
-  private static final String TEST_SRC_FILE_PATH = "example_files/tiny.pdf";
+  private static final String TEST_SRC_FILE_PATH = "example_files/large.pdf";
   private static final String TEST_DST_FILE_PATH = "example_files/test_file.pdf";
 
   @BeforeEach
   void setUp() {
     fileLoader = new FileLoader();
-    testFile = Paths.get("example_files/tiny.pdf");
+    testFile = Paths.get(TEST_SRC_FILE_PATH);
   }
 
   @Test
@@ -52,7 +52,7 @@ public class FileLoaderTest {
       System.out.println(packet.getPayload().getSize());
       totalPayloadSize += packet.getPayload().getSize();
     }
-    //assertEquals(Files.size(Paths.get(TEST_SRC_FILE_PATH)),totalPayloadSize);
+    assertEquals(Files.size(Paths.get(TEST_SRC_FILE_PATH)),totalPayloadSize);
   }
 
   @Test
@@ -63,6 +63,7 @@ public class FileLoaderTest {
     assertTrue(initPacket.getHeader().isFlagSet(FLAG.DATA));
 
     String[] payloadStrings = PacketParser.getStringPayload(PacketParser.packetToByteArray(initPacket));
+    assert payloadStrings != null;
     assertEquals(TEST_DST_FILE_PATH, payloadStrings[0]);
   }
 }
