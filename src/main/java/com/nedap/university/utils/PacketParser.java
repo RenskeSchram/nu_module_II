@@ -17,9 +17,9 @@ public class PacketParser {
     header.setChecksum(((data[8] & 0xFF) << 8) | (data[9] & 0xFF));
     header.setFlags(data[10]);
 
-    byte[] payloadByteArray = new byte[data.length - Header.getSize()];
-    System.arraycopy(data, Header.getSize(), payloadByteArray,
-        0, data.length - Header.getSize());
+    byte[] payloadByteArray = new byte[data.length - Parameters.HEADER_SIZE];
+    System.arraycopy(data, Parameters.HEADER_SIZE, payloadByteArray,
+        0, data.length - Parameters.HEADER_SIZE);
 
     Payload payload = new Payload(payloadByteArray, header.getOffsetPointer(), header.isFlagSet(FLAG.FIN));
 
@@ -66,9 +66,9 @@ public class PacketParser {
   }
 
   public static byte[] getPayload(byte[] packet) {
-    byte[] payload = new byte[packet.length - Header.getSize()];
-    System.arraycopy(packet, Header.getSize(), payload,
-        0, packet.length - Header.getSize());
+    byte[] payload = new byte[packet.length - Parameters.HEADER_SIZE];
+    System.arraycopy(packet, Parameters.HEADER_SIZE, payload,
+        0, packet.length - Parameters.HEADER_SIZE);
     return payload;
   }
 

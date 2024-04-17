@@ -20,7 +20,7 @@ public class FileBuffer {
   private int fileSize;
 
   private int expectedOffsetPointer = 0;
-  private int finalOffsetPointer;
+  private int finalOffsetPointer = -1;
 
   public boolean isInitialized = false;
 
@@ -95,12 +95,14 @@ public class FileBuffer {
   void writeBufferToFile() {
     try {
       Path path = Paths.get(filePath);
-      FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-
-      byteBuffer.flip();
-      fileChannel.write(byteBuffer);
-
-      fileChannel.close();
+      try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+        System.out.println(byteBuffer.array().length);
+        byteBuffer.flip();
+        while (byteBuffer.hasRemaining()) {
+          fileChannel.write(byteBuffer);
+          System.out.println(fileChannel.size());
+        }
+      }
 
       System.out.println("File " + filePath + " created");
     } catch (IOException e) {

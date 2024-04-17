@@ -34,7 +34,7 @@ public class FileLoaderTest {
   void testExtractPackets() throws IOException {
     List<Packet> packetList = fileLoader.extractPackets(testFile);
 
-    // assert List not empty
+    // List not empty
     assertNotNull(packetList);
     assertFalse(packetList.isEmpty());
 
@@ -43,8 +43,16 @@ public class FileLoaderTest {
     Header header = packetList.get(0).getHeader();
     header.setFlag(FLAG.HELLO);
     assertTrue(header.isFlagSet(FLAG.HELLO));
+    header = packetList.get(packetList.size() -1).getHeader();
+    assertTrue(header.isFlagSet(FLAG.FIN));
 
     // PAYLOAD
+    int totalPayloadSize = 0;
+    for (Packet packet : packetList) {
+      System.out.println(packet.getPayload().getSize());
+      totalPayloadSize += packet.getPayload().getSize();
+    }
+    //assertEquals(Files.size(Paths.get(TEST_SRC_FILE_PATH)),totalPayloadSize);
   }
 
   @Test
@@ -55,6 +63,6 @@ public class FileLoaderTest {
     assertTrue(initPacket.getHeader().isFlagSet(FLAG.DATA));
 
     String[] payloadStrings = PacketParser.getStringPayload(PacketParser.packetToByteArray(initPacket));
-    assertEquals(TEST_SRC_FILE_PATH, payloadStrings[0]);
+    assertEquals(TEST_DST_FILE_PATH, payloadStrings[0]);
   }
 }

@@ -1,5 +1,6 @@
 package com.nedap.university.packet;
 
+import com.nedap.university.utils.Parameters;
 import java.nio.ByteBuffer;
 
 public class Packet {
@@ -11,7 +12,7 @@ public class Packet {
   public Packet(Header header, Payload payload) {
     this.header = header;
     this.payload = payload;
-    this.size = Header.getSize() + payload.getSize();
+    this.size = Parameters.HEADER_SIZE + payload.getSize();
   }
 
   public Header getHeader() {

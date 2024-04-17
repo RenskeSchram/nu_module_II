@@ -1,7 +1,8 @@
 package com.nedap.university.packet;
 
+import com.nedap.university.utils.Parameters;
+
 public class Header {
-  private static final int SIZE = 12;
   private byte[] byteArray;
 
   private int payloadDataSize;
@@ -15,16 +16,16 @@ public class Header {
   private byte flags;
 
   public Header() {
-    byteArray = new byte[SIZE];
+    byteArray = new byte[Parameters.HEADER_SIZE];
   }
 
   public Header(Payload payload) {
-    byteArray = new byte[SIZE];
+    byteArray = new byte[Parameters.HEADER_SIZE];
     setWithDataPayload(payload);
   }
 
-  public static int getSize() {
-    return SIZE;
+  public int getSize() {
+    return byteArray.length;
   }
 
   public byte[] getByteArray() {

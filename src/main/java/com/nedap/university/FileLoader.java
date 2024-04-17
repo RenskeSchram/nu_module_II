@@ -1,5 +1,8 @@
 package com.nedap.university;
 
+import static com.nedap.university.utils.Parameters.HEADER_SIZE;
+import static com.nedap.university.utils.Parameters.MAX_PAYLOAD_SIZE;
+
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Header;
@@ -15,10 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileLoader {
-  private final int HEADER_SIZE = Header.getSize();
-  private final int MAX_PAYLOAD_SIZE = Parameters.MAX_PACKET_SIZE - HEADER_SIZE;
-
-
   /**
    * Extract PacketList from File.
    *
@@ -28,22 +27,19 @@ public class FileLoader {
   public List<Packet> extractPackets(Path file_path) throws IOException {
     List<Packet> packetList = new ArrayList<>();
     int offsetPointer = 0;
-
     long fileLength = Files.size(file_path);
-
-    while (offsetPointer < fileLength / MAX_PAYLOAD_SIZE) {
+    while (offsetPointer <   (int) Math.ceil((double) fileLength / MAX_PAYLOAD_SIZE)){
       // add packet payload
       byte[] payloadByteArray;
       boolean isFinalPacket;
+      if (((long) offsetPointer + 1) * MAX_PAYLOAD_SIZE <= fileLength) {
+        payloadByteArray = new byte[MAX_PAYLOAD_SIZE];
 
-      if (offsetPointer * MAX_PAYLOAD_SIZE <= fileLength) {
-        payloadByteArray = new byte[HEADER_SIZE + MAX_PAYLOAD_SIZE];
         isFinalPacket = false;
       } else {
-        payloadByteArray = new byte[(int) (HEADER_SIZE + fileLength % MAX_PAYLOAD_SIZE)];
+        payloadByteArray = new byte[(int) (fileLength % MAX_PAYLOAD_SIZE)];
         isFinalPacket = true;
       }
-
       System.arraycopy(Files.readAllBytes(file_path), offsetPointer * MAX_PAYLOAD_SIZE, payloadByteArray,
           0, payloadByteArray.length);
 

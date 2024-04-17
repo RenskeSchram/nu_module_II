@@ -33,7 +33,7 @@ public class FileBufferTest {
 
   @AfterEach
   public void tearDown() {
-    Path path = Paths.get(TEST_DST_FILE_PATH);
+    Path path = Paths.get(TEST_DST_FILE_PATH+"not");
     try {
       Files.deleteIfExists(path);
     } catch (IOException e) {
@@ -59,7 +59,12 @@ public class FileBufferTest {
     testInitFileBuffer();
     byte[] packet = PacketParser.packetToByteArray(packetList.get(0));
     fileBuffer.receivePacket(packet);
-    assertArrayEquals(PacketParser.getPayload(packet), fileBuffer.getByteBuffer().array());
+
+    byte[] bufferPayload = new byte[PacketParser.getPayload(packet).length];
+    System.arraycopy(fileBuffer.getByteBuffer().array(), 0, bufferPayload, 0, PacketParser.getPayload(packet).length);
+
+    // Assert that the payloads are equal
+    assertArrayEquals(PacketParser.getPayload(packet), bufferPayload);
   }
 
   @Test
@@ -85,13 +90,22 @@ public class FileBufferTest {
   @Test
   public void testWriteBufferToFile() throws IOException {
     testInitFileBuffer();
+    int writtenPayloadSize = 0;
+
     for (Packet packet : packetList) {
       fileBuffer.receivePacket(PacketParser.packetToByteArray(packet));
+      writtenPayloadSize += packet.getPayload().getSize();
     }
     fileBuffer.writeBufferToFile();
 
-    Path path = Paths.get(TEST_SRC_FILE_PATH);
-    assertTrue(Files.exists(path));
+    Path src_path = Paths.get(TEST_SRC_FILE_PATH);
+    Path dst_path = Paths.get(TEST_DST_FILE_PATH);
+
+    assertTrue(Files.exists(dst_path));
+    System.out.println(fileBuffer.getByteBuffer().capacity());
+    System.out.println(fileBuffer.getFileSize());
+    System.out.println(writtenPayloadSize);
+    assertArrayEquals(Files.readAllBytes(src_path), Files.readAllBytes(dst_path));
 
   }
 }

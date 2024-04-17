@@ -6,6 +6,8 @@ import com.nedap.university.utils.Parameters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static com.nedap.university.utils.Parameters.HEADER_SIZE;
+import static com.nedap.university.utils.Parameters.MAX_PAYLOAD_SIZE;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class HeaderTest {
@@ -19,13 +21,13 @@ public class HeaderTest {
 
   @Test
   void testGetSize() {
-    assertEquals(Parameters.HEADER_SIZE, Header.getSize());
+    assertEquals(HEADER_SIZE, header.getSize());
   }
 
   @Test
   void testSetAndGetPayloadDataSize() {
-    header.setPayloadDataSize(Parameters.MAX_PAYLOAD_SIZE);
-    assertEquals(Parameters.MAX_PAYLOAD_SIZE, header.getPayloadDataSize());
+    header.setPayloadDataSize(MAX_PAYLOAD_SIZE);
+    assertEquals(MAX_PAYLOAD_SIZE, header.getPayloadDataSize());
   }
 
 
