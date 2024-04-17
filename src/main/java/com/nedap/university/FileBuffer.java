@@ -6,9 +6,11 @@ import com.nedap.university.utils.Parameters;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +52,14 @@ public class FileBuffer {
 
   private void writePacketsToBuffer(byte[] payload, int offsetPointer) {
     byteBuffer.position(offsetPointer* Parameters.MAX_PAYLOAD_SIZE);
-    byteBuffer.put(payload);
+    try {
+      byteBuffer.put(payload);
+    } catch (Exception e ) {
+      System.out.println("Could not add file");
+      System.out.println("Current position: " + byteBuffer.position());
+      System.out.println("Current capacity: " + byteBuffer.capacity());
+      System.out.println("Payload length: " + payload.length);
+    }
 
     for (int offset : savedPackets.keySet()) {
       byte[] packetData = savedPackets.get(offset);
@@ -58,7 +67,7 @@ public class FileBuffer {
       byteBuffer.put(packetData);
     }
 
-    if (expectedOffsetPointer == finalOffsetPointer ) {
+    if (expectedOffsetPointer == finalOffsetPointer) {
       writeBufferToFile();
       resetBuffer();
     }
@@ -104,7 +113,10 @@ public class FileBuffer {
         }
       }
 
-      System.out.println("File " + filePath + " created");
+      String s = Paths.get(filePath).toAbsolutePath().toString();
+      System.out.println("Created file  is: " + s);
+      System.out.println("Current file size is: " + Files.size(Paths.get(filePath)));
+
     } catch (IOException e) {
       e.printStackTrace();
     }

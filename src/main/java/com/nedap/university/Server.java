@@ -1,5 +1,6 @@
 package com.nedap.university;
 
+import com.nedap.university.UDPTest.QuoteServer;
 import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
@@ -29,8 +30,8 @@ public class Server extends AbstractHost {
   Server(int port) throws SocketException {
     socket = new DatagramSocket(port);
     fileLoader = new FileLoader();
-    queue = new PacketQueue();
     fileBuffer = new FileBuffer();
+    queue = new PacketQueue();
   }
 
   public void uploadFile(String src_dir, String dst_dir) throws IOException, InterruptedException {
@@ -42,10 +43,7 @@ public class Server extends AbstractHost {
     for (Packet packet : packetList) {
       queue.putPacket(packet);
     }
-
-    service();
   }
-
 
   @Override
   public void downloadFile(String FILE_DIR) {
@@ -63,7 +61,6 @@ public class Server extends AbstractHost {
 
   }
 
-
   private void service() throws IOException, InterruptedException {
     while (true) {
       byte[] buffer = new byte[Parameters.MAX_PACKET_SIZE];
@@ -71,9 +68,8 @@ public class Server extends AbstractHost {
       socket.receive(receivedPacket);
       Packet packet = new Packet(receivedPacket.getData());
 
-      // Receive packet
       if (expectedAck == packet.getHeader().getAckNr()) {
-        handlePacket(packet);
+        handlePacket(receivedPacket);
       }
     }
   }
@@ -89,7 +85,8 @@ public class Server extends AbstractHost {
     System.out.println("Packet send with ACK: " + AckNr);
   }
 
-  public void handlePacket(Packet packet) throws IOException, InterruptedException {
+  public void handlePacket(DatagramPacket datagramPacket) throws IOException, InterruptedException {
+    Packet packet = new Packet(datagramPacket.getData());
     Header header = packet.getHeader();
     Payload payload = packet.getPayload();
 
@@ -121,7 +118,6 @@ public class Server extends AbstractHost {
         // DATA
       case (byte) 0b00000010:
         sendAck();
-
         fileBuffer.receivePacket(payload);
 
         // DATA + FIN
@@ -130,7 +126,6 @@ public class Server extends AbstractHost {
 
         fileBuffer.receivePacket(payload);
         fileBuffer.receiveFin(payload);
-
 
         // ACK
       case (byte) 0b00010000:
@@ -149,23 +144,27 @@ public class Server extends AbstractHost {
 
   }
 
-  private void sendAck() {
-
-  }
+  private void sendAck(){}
 
   private void sendNextPacket() {
 
   }
 
   public static void main(String[] args) throws SocketException {
-    Server server = new Server(port);
-
+    int port = Integer.parseInt(args[1]);
+    try {
+      Server server = new Server(port);
+      server.service();
+    } catch (SocketException ex) {
+      System.out.println("Socket error: " + ex.getMessage());
+    } catch (IOException ex) {
+      System.out.println("I/O error: " + ex.getMessage());
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-
-
   private Packet getHelloDataPacket(String dstDir, long size) {
-
     byte[] dstDirBytes = dstDir.getBytes();
     ByteBuffer sizeBytes = ByteBuffer.allocate(Long.BYTES);
     sizeBytes.putLong(size);

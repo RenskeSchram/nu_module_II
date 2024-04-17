@@ -56,6 +56,26 @@ public class FileLoader {
     return packetList;
   }
 
+  public Packet extractPacket(Path file_path, int offsetPointer) throws IOException {
+    try (FileChannel fileChannel = FileChannel.open(file_path, StandardOpenOption.READ)) {
+      long fileLength = fileChannel.size();
+
+       int remainingBytes = (int) Math.min(fileLength - offsetPointer * Parameters.MAX_PAYLOAD_SIZE, Parameters.MAX_PAYLOAD_SIZE);
+
+        ByteBuffer buffer = ByteBuffer.allocate(remainingBytes);
+        fileChannel.read(buffer);
+        buffer.flip();
+
+        byte[] payloadByteArray = new byte[remainingBytes];
+        buffer.get(payloadByteArray);
+
+        boolean isFinalPacket = (offsetPointer + 1) * Parameters.MAX_PAYLOAD_SIZE >= fileLength;
+        Payload payload = new Payload(payloadByteArray, offsetPointer, isFinalPacket);
+        Header header = new Header(payload);
+        return new Packet(header, payload);
+    }
+  }
+
   public Packet getInitPacket(String dstDir, long size) {
     Payload payload = new Payload(dstDir, size, false);
     Header header = new Header(payload);

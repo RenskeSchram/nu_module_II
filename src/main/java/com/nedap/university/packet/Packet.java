@@ -24,9 +24,9 @@ public class Packet {
     System.arraycopy(byteArray, 0, headerByteArray, 0, HEADER_SIZE);
     header.setByteArray(headerByteArray);
 
-    byte[] payloadByteArray = new byte[byteArray.length - HEADER_SIZE];
+    byte[] payloadByteArray = new byte[header.getPayloadDataSize()];
     System.arraycopy(byteArray, HEADER_SIZE, payloadByteArray,
-        0, byteArray.length - HEADER_SIZE);
+        0, header.getPayloadDataSize());
     payload = new Payload(payloadByteArray, header.getOffsetPointer(), header.isFlagSet(FLAG.FIN));
     size = Parameters.HEADER_SIZE + payload.getSize();
   }

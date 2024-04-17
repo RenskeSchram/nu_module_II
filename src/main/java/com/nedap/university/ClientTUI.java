@@ -96,7 +96,7 @@ public class ClientTUI {
           if (protocol.length == 3) {
             System.out.println("sending file");
             protocol[1] = "example_files/tiny.pdf";
-            protocol[2] = "example_files/tiny_output.pdf";
+            protocol[2] = "home/pi/PiServer/tiny_output.pdf";
             client.uploadFile(protocol[1], protocol[2]);
           } else {
             System.out.println("Invalid input length, try again.");

@@ -101,10 +101,6 @@ public class Client {
     System.out.println("Packet send with ACK: " + AckNr);
   }
 
-  public FileLoader getFileLoader() {
-    return fileLoader;
-  }
-
   public void getList(String DIR) {
   }
 }

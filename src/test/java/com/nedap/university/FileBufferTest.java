@@ -22,8 +22,8 @@ public class FileBufferTest {
   private FileBuffer fileBuffer;
   private FileLoader fileLoader;
   private List<Packet> packetList;
-  private static final String TEST_SRC_FILE_PATH = "example_files/tiny.pdf";
-  private static final String TEST_DST_FILE_PATH = "example_files/test_file.pdf";
+  static final String TEST_SRC_FILE_PATH = "example_files/tiny.pdf";
+  static final String TEST_DST_FILE_PATH = "example_files/test_file.pdf";
 
   @BeforeEach
   public void setUp() throws IOException {
