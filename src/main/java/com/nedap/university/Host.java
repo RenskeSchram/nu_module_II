@@ -7,14 +7,10 @@ import java.net.InetAddress;
 
 public interface Host {
 
-  void uploadFile(String FILE_DIR) throws InterruptedException, IOException;
+  default void service() throws IOException, InterruptedException {};
 
-  void downloadFile(String FILE_DIR);
+  default void sendPacket(Packet packet, InetAddress dstAddress, int dstPort) throws IOException {}
 
-  void getList(String DIR);
-
-  default void sendPacket(DatagramPacket datagramPacket) {
-
-  }
+  boolean isValidPacket(Packet receivedPacket);
 
 }

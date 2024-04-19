@@ -1,23 +1,21 @@
 package com.nedap.university;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class ClientTUI {
   boolean runTui = true;
-  NewClient client;
+  Client client;
   String CLIENT_HOME = "example_files/";
   String SERVER_HOME =  "home/pi/PiServer/";
+  int PORT = 8080;
 
   ClientTUI() throws SocketException {
-    client = new NewClient();
+    client = new Client(PORT);
   }
 
   public void runTUI() throws IOException, InterruptedException {
@@ -76,7 +74,6 @@ public class ClientTUI {
     while (runTui) {
       String systemTuiInput = scanner.nextLine();
 
-      // TUI options beside regular protocol
       if (systemTuiInput.equalsIgnoreCase("help")) {
         System.out.println(this);
       } else if (systemTuiInput.equalsIgnoreCase("disconnect")) {
@@ -98,8 +95,6 @@ public class ClientTUI {
       switch (protocol[0].toLowerCase()) {
         case "send":
           if (protocol.length == 3) {
-            //protocol[1] = "tiny.pdf";
-            //protocol[2] = "tiny_output.pdf";
             client.uploadFile(CLIENT_HOME + protocol[1], SERVER_HOME + protocol[2]);
           } else {
             System.out.println("Invalid input length, try again.");
@@ -107,8 +102,6 @@ public class ClientTUI {
           break;
         case "get":
           if (protocol.length == 3) {
-            //protocol[1] = "tiny_output.pdf";
-            //protocol[2] = "tiny.pdf";
             client.downloadFile(SERVER_HOME + protocol[1], CLIENT_HOME + protocol[2]);
           } else {
             System.out.println("Invalid input length, try again.");
@@ -118,7 +111,6 @@ public class ClientTUI {
           if (protocol.length == 1) {
             client.getList(SERVER_HOME);
           } else if (protocol.length == 2) {
-            //protocol[1] = "home/pi/PiServer/";
             client.getList(SERVER_HOME + protocol[1]);
           } else {
             System.out.println("Invalid input length, try again.");

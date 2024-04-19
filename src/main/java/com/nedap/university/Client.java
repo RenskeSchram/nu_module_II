@@ -1,111 +1,97 @@
 package com.nedap.university;
 
+import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
-
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
-import java.nio.file.Files;
 
-public class Client {
+public class Client extends AbstractHost{
+  private static String dstInetAdress = "172.16.1.1";
+  private static int dstPort = 8080;
+  private boolean inService;
 
-  private final FileLoader fileLoader;
-  private final PacketQueue queue;
+  private int finalServiceAck;
 
-  static final int port = 8080;
-  static final String host = "172.16.1.1";
-  private DatagramSocket socket;
-
-  private List<Integer> receivingWindow;
-  private ServiceHandler serviceHandler;
-
-  Client() throws SocketException {
-    fileLoader = new FileLoader();
-    queue = new PacketQueue();
-    socket = new DatagramSocket(port);
-    serviceHandler = new ServiceHandler();
-    receivingWindow = new ArrayList<>();
-    }
-
-  public void uploadFile(String src_dir, String dst_dir) throws IOException, InterruptedException {
-    Path file_path = Paths.get(src_dir);
-
-    queue.packetQueue.add(fileLoader.getInitPacket(src_dir, dst_dir, Files.size(file_path)));
-
-    List<Packet> packetList = fileLoader.extractPackets(file_path);
-    for (Packet packet : packetList) {
-      queue.putPacket(packet);
-    }
-
-    service();
+  Client(int port) throws SocketException {
+    super(port);
+    finalServiceAck = -1;
   }
 
-  public void downloadFile(String FILE_DIR, String s) {
-    // send GET packet
+  public void service() throws IOException {
+    inService = true;
 
-    // retrieve packets
+    while (inService) {
+      DatagramPacket request = new DatagramPacket(new byte[Parameters.MAX_PACKET_SIZE], Parameters.MAX_PACKET_SIZE);
+      socket.receive(request);
+      Packet receivedPacket = new Packet(request.getData());
 
-    // correctly assemble packets in order
-  }
+      if (isValidPacket(receivedPacket)) {
+        //TODO: send ACK
 
-  private void service() throws IOException, InterruptedException {
-    int currentAck = 0;
-    receivingWindow = new ArrayList<>();
-    receivingWindow.add(currentAck);
-
-    sendNextPacket(InetAddress.getByName(host), port, currentAck);
-    
-    while (true) {
-      byte[] buffer = new byte[Parameters.MAX_PACKET_SIZE];
-      DatagramPacket response = new DatagramPacket(buffer, buffer.length);
-      socket.receive(response);
-
-      Packet receivedPacket = new Packet(response.getData());
-      System.out.println("Received packet with ACK: " + receivedPacket.getHeader().getAckNr());
-
-      if (isValidAck(receivedPacket.getHeader().getAckNr())) {
-        currentAck++;
-        receivingWindow = new ArrayList<>();
-        receivingWindow.add(currentAck);
-
-        InetAddress clientAddress = response.getAddress();
-        int clientPort = response.getPort();
-
-        // get next packet
-        if (queue.packetQueue.isEmpty()) {
-          System.out.println("All packets are send");
+        //Check if final packet
+        if (receivedPacket.getHeader().getAckNr() == finalServiceAck) {
+          finalServiceAck = -1;
+          System.out.println("UPLOAD FINISHED");
           break;
-        } else {
-          sendNextPacket(clientAddress, clientPort, currentAck);
         }
 
-      } else {
-        System.out.println("Incorrect package received");
+        if (receivedPacket.getHeader().isFlagSet(FLAG.FIN)) {
+          serviceHandler.handlePacket(receivedPacket);
+          finalServiceAck = -1;
+          System.out.println("DOWNLOAD FINISHED");
+          break;
+        }
+
+        //Get and send response packet(s)
+        List<Packet> responsePackets = serviceHandler.handlePacket(receivedPacket);
+
+        InetAddress clientAddress = request.getAddress();
+        int clientPort = request.getPort();
+
+        if (!responsePackets.isEmpty()) {
+          for (Packet packet : responsePackets) {
+            sendPacket(packet, clientAddress, clientPort);
+
+            // if not ACK packet, set timer
+            //  -> createTimer(packet, new Timer(true));
+          }
+        }
       }
     }
   }
 
-  private void sendNextPacket(InetAddress address, int port, int AckNr) throws IOException {
-    Packet packet = queue.removePacket();
-    packet.getHeader().setAckNr(AckNr);
 
-    DatagramPacket datagramPacket = new DatagramPacket(packet.getByteArray(), packet.getSize(), address, port);
-    socket.send(datagramPacket);
-    System.out.println("Packet send with ACK: " + AckNr);
+  public void uploadFile(String src_dir, String dst_dir) throws IOException, InterruptedException {
+    System.out.println("UPLOAD STARTED");
+    Packet startUploadPacket = serviceHandler.startUpload(src_dir, dst_dir);
+    setFinalServiceAck(startUploadPacket);
+    sendPacket(startUploadPacket, InetAddress.getByName(dstInetAdress), dstPort);
+    service();
   }
 
-  public void getList(String DIR) {
+  public void downloadFile(String src_dir, String dst_dir) throws IOException, InterruptedException {
+    System.out.println("DOWNLOAD STARTED");
+    Packet startDownloadPacket = serviceHandler.startDownload(src_dir, dst_dir);
+    sendPacket(startDownloadPacket, InetAddress.getByName(dstInetAdress), dstPort);
+    service();
   }
 
-  public boolean isValidAck(int receivedAck) {
-    return receivingWindow.contains(receivedAck);
+  public void getList(String src_dir) throws IOException {
+    System.out.println("ASKED FOR FILE LIST " + src_dir);
+    Packet getListPacket = serviceHandler.getHelloListPacket(src_dir);
+    sendPacket(getListPacket, InetAddress.getByName(dstInetAdress), dstPort);
+    service();
+  }
+
+  public void setFinalServiceAck(Packet servicePacket) {
+    int numOfPackets = (int) Math.ceil((double) servicePacket.getPayload().getFileSize() / Parameters.MAX_PAYLOAD_SIZE);
+    this.finalServiceAck = servicePacket.getHeader().getAckNr() + numOfPackets;
   }
 }
+
 

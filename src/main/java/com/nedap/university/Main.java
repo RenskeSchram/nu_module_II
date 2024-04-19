@@ -1,6 +1,6 @@
 package com.nedap.university;
 
-import com.nedap.university.UDPTest.QuoteServer;
+import com.nedap.university.Server;
 
 public class Main {
 
@@ -12,13 +12,12 @@ public class Main {
     public static void main(String[] args) {
         running = true;
         System.out.println("Hello, Nedap University!");
-        QuoteServer.main(new String[]{ "8080"});
+        Server.main(new String[]{ "8080"});
 
         initShutdownHook();
 
         while (keepAlive) {
             try {
-                // do useful stuff
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

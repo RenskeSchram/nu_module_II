@@ -4,8 +4,12 @@ import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Payload;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ServiceHandler {
   FileBuffer fileBuffer;
@@ -27,7 +31,6 @@ public class ServiceHandler {
 
     // If not Flag.ACK, send ACK
     if (flags != 0b00010000) {
-      System.out.println("not ack packet");
       packetsToSend.add(getAckPacket(header.getAckNr()));
     }
 
@@ -57,7 +60,6 @@ public class ServiceHandler {
 
         // ACK
       case (byte) 0b00010000:
-        System.out.println("received ack packet");
         // updateSendingWindow()
         int availableAckNrs = updateSendingWindow(header.getAckNr());
         // if (new windowSpotsAvailable)-> fileLoader.extractFile(based on updated sending window)
@@ -73,24 +75,78 @@ public class ServiceHandler {
           }
         break;
 
+      // HELLO + LIST
+      case (byte) 0b00001100:
+        // getListPacket(payload)
+        packetsToSend.add(getListPacket(payload));
+        break;
+
+
+      // LIST + FIN
+      case (byte) 0b00101000:
+        // getListPacket(payload)
+        printListPacket(payload);
+        break;
+
       default:
         System.out.println("could not handle packet");
 
-        // HELLO + LIST
-        // setSendingWindow()
-        // getListPacket(payload)
     }
 
     return packetsToSend;
   }
+
+  private void printListPacket(Payload payload) {
+    String[] fileNames = payload.getStringArray();
+
+    System.out.println("The following files are in the requested folder on the PiServer:");
+
+    for (String fileName : fileNames) {
+      System.out.println("   - " + fileName);
+    }
+  }
+
+  private Packet getListPacket(Payload payload) {
+    List<String> fileNames = null;
+
+    try (var directoryStream = Files.list(Paths.get(payload.getSrcPath()))) {
+      fileNames = directoryStream.map(Path::getFileName).map(Path::toString).collect(Collectors.toList());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    StringBuilder fileNameString = new StringBuilder();
+    if (fileNames != null) {
+      for (int i = 0; i < fileNames.size(); i++) {
+        fileNameString.append(fileNames.get(i));
+        if (i < fileNames.size() - 1) {
+          fileNameString.append("~");
+        }
+      }} else {fileNameString.append("");
+    }
+    Payload listPayload = new Payload(fileNameString.toString().getBytes(), 0 , true);
+    Header header = new Header(listPayload);
+    header.setFlagByte((byte) 0b00101000);
+    header.setAckNr(currentAckNr);
+
+    return new Packet(header, listPayload);
+  }
+
+  Packet getHelloListPacket(String src_dir) {
+    Payload payload = new Payload(src_dir.toString().getBytes(), 0 , false);
+    Header header = new Header(payload);
+    header.setFlagByte((byte) 0b00001100);
+    header.setAckNr(currentAckNr);
+    return new Packet(header, payload);
+  }
+
+
 
   public static Packet getAckPacket(int AckNr) {
     Payload payload = new Payload(new byte[1], 0, false);
     Header header = new Header(payload);
     header.setAckNr(AckNr);
     header.setFlagByte((byte) 0b00010000);
-
-    System.out.println("sending package with Ack: " + AckNr);
 
     return new Packet(header, payload);
   }
