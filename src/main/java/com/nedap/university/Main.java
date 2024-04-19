@@ -12,7 +12,7 @@ public class Main {
     public static void main(String[] args) {
         running = true;
         System.out.println("Hello, Nedap University!");
-        QuoteServer.main(new String[]{"/home/pi/Quotes.txt", "8080"});
+        QuoteServer.main(new String[]{ "8080"});
 
         initShutdownHook();
 

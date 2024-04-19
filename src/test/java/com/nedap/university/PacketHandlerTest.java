@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 public class PacketHandlerTest {
 
   private FileLoader fileLoader;
-  private PacketHandler packetHandler;
+  private ServiceHandler serviceHandler;
   private List<Packet> packetList;
 
   static final String TEST_SRC_FILE_PATH = "example_files/tiny.pdf";
@@ -21,17 +21,17 @@ public class PacketHandlerTest {
   @BeforeEach
   public void setUp() throws IOException {
     fileLoader = new FileLoader();
-    packetHandler = new PacketHandler();
+    serviceHandler = new ServiceHandler();
     packetList = fileLoader.extractPackets(Paths.get(TEST_SRC_FILE_PATH));
   }
 
   @Test
   public void testPacketHandler() throws IOException {
-    Packet initPacket = fileLoader.getInitPacket(TEST_DST_FILE_PATH, Files.size(Paths.get(TEST_SRC_FILE_PATH)));
-    packetHandler.handlePacket(initPacket);
+    Packet initPacket = fileLoader.getInitPacket(TEST_SRC_FILE_PATH, TEST_DST_FILE_PATH, Files.size(Paths.get(TEST_SRC_FILE_PATH)));
+    serviceHandler.handlePacket(initPacket);
 
     for (Packet packet: packetList) {
-      packetHandler.handlePacket(packet);
+      serviceHandler.handlePacket(packet);
     }
   }
 

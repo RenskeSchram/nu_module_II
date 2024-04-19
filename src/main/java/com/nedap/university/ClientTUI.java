@@ -12,10 +12,10 @@ import java.util.Scanner;
 
 public class ClientTUI {
   boolean runTui = true;
-  Client client;
+  NewClient client;
 
   ClientTUI() throws SocketException {
-    client = new Client();
+    client = new NewClient();
   }
 
   public void runTUI() throws IOException, InterruptedException {
@@ -25,7 +25,7 @@ public class ClientTUI {
     InetAddress hostname = null;
     boolean validHostname = false;
     while (!validHostname) {
-      System.out.print("hostname:     \n");
+      System.out.print("PI_hostname:     \n");
       try {
         //hostname = InetAddress.getByName(scanner.nextLine());
         hostname = InetAddress.getByName("172.16.1.1");
@@ -49,25 +49,27 @@ public class ClientTUI {
         scanner.nextLine();
       }
     }
-
-    try {
-      DatagramSocket socket = new DatagramSocket();
-      DatagramPacket request = new DatagramPacket(new byte[1], 1, hostname, port);
-      socket.send(request);
-
-      byte[] buffer = new byte[512];
-      DatagramPacket response = new DatagramPacket(buffer, buffer.length);
-      socket.receive(response);
-
-      System.out.println("PI Server is ACTIVE");
-
-    } catch (SocketTimeoutException ex) {
-      System.out.println("Timeout error: " + ex.getMessage());
-      ex.printStackTrace();
-    } catch (IOException ex) {
-      System.out.println("Client error: " + ex.getMessage());
-      ex.printStackTrace();
-    }
+//
+//    try {
+//      DatagramSocket socket = new DatagramSocket();
+//      DatagramPacket request = new DatagramPacket(new byte[1], 1, hostname, port);
+//      socket.send(request);
+//      System.out.println("request is send");
+//
+//      byte[] buffer = new byte[512];
+//      DatagramPacket response = new DatagramPacket(buffer, buffer.length);
+//      socket.receive(response);
+//
+//      System.out.println("PI Server is ACTIVE");
+//
+//    } catch (SocketTimeoutException ex) {
+//      System.out.println("Timeout error: " + ex.getMessage());
+//      ex.printStackTrace();
+//    } catch (IOException ex) {
+//      System.out.println("Client error: " + ex.getMessage());
+//      ex.printStackTrace();
+//    }
+    System.out.println(this);
 
     while (runTui) {
       String systemTuiInput = scanner.nextLine();
@@ -103,18 +105,19 @@ public class ClientTUI {
           }
           break;
         case "get":
-          if (protocol.length == 2) {
+          if (protocol.length == 3) {
             System.out.println("retrieving file file");
-            protocol[1] = "example_files/tiny.pdf";
-            client.downloadFile(protocol[1]);
+            protocol[1] = "home/pi/PiServer/tiny_output.pdf";
+            protocol[2] = "example_files/tiny.pdf";
+            client.downloadFile(protocol[1], protocol[2]);
           } else {
             System.out.println("Invalid input length, try again.");
           }
           break;
         case "list":
           if (protocol.length == 2) {
-            System.out.println("sending file");
-            protocol[1] = "example_files/tiny.pdf";
+            System.out.println("retrieving list");
+            protocol[1] = "home/pi/PiServer/";
             client.getList(protocol[1]);
           } else {
             System.out.println("Invalid input length, try again.");
@@ -131,8 +134,8 @@ public class ClientTUI {
   public String toString() {
     return
         "Client TUI commands:\n" +
-            "   SEND <src_dir> ............. send file \n" +
-            "   GET  <src_dir> ............. get file \n" +
+            "   SEND <src_dir> <dst_dir>.... send file \n" +
+            "   GET  <src_dir> <dst_dir>.... get file \n" +
             "   LIST <src_dir> ............. get filenames stored directory \n" +
             "   DISCONNECT ................. disconnect and stop \n" +
             "   HELP ....................... help (this menu) \n";
