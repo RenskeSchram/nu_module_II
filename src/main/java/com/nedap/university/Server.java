@@ -50,6 +50,9 @@ public class Server extends AbstractHost {
       System.out.println("received package with flags" + receivedPacket.getHeader().getFlagByte());
 
       if (isValidPacket(receivedPacket)) {
+        // cancel timer
+        cancelTimer(receivedPacket.getHeader().getAckNr());
+
         List<Packet> responsePackets = serviceHandler.handlePacket(receivedPacket);
 
         InetAddress clientAddress = request.getAddress();

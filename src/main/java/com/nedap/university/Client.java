@@ -31,6 +31,9 @@ public class Client extends AbstractHost{
       Packet receivedPacket = new Packet(request.getData());
 
       if (isValidPacket(receivedPacket)) {
+        // cancel timer
+        cancelTimer(receivedPacket.getHeader().getAckNr());
+
         //TODO: send ACK
 
         //Check if final packet
@@ -92,6 +95,8 @@ public class Client extends AbstractHost{
     int numOfPackets = (int) Math.ceil((double) servicePacket.getPayload().getFileSize() / Parameters.MAX_PAYLOAD_SIZE);
     this.finalServiceAck = servicePacket.getHeader().getAckNr() + numOfPackets;
   }
+
+
 }
 
 
