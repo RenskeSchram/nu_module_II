@@ -3,8 +3,6 @@ package com.nedap.university;
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Payload;
-import com.nedap.university.utils.*;
-import java.io.File;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 
 public class FileBufferTest {
 
@@ -44,13 +41,13 @@ public class FileBufferTest {
 
   @Test
   public void testInitFileBuffer() throws IOException {
-    Packet initPacket = fileLoader.getInitPacket(TEST_DST_FILE_PATH, Files.size(Paths.get(TEST_SRC_FILE_PATH)));
+    Packet initPacket = fileLoader.getInitPacket(TEST_SRC_FILE_PATH, TEST_DST_FILE_PATH, Files.size(Paths.get(TEST_SRC_FILE_PATH)));
     fileBuffer.initFileBuffer(initPacket.getPayload());
     assertTrue(initPacket.getHeader().isFlagSet(FLAG.HELLO));
     assertTrue(initPacket.getHeader().isFlagSet(FLAG.DATA));
 
     assertTrue(fileBuffer.isInitialized);
-    assertEquals(TEST_DST_FILE_PATH, fileBuffer.getFilePath());
+    assertEquals(TEST_DST_FILE_PATH, fileBuffer.getDst_path());
     assertEquals(Files.size(Paths.get(TEST_SRC_FILE_PATH)), fileBuffer.getFileSize());
     assertNotNull(fileBuffer.getByteBuffer());
   }
@@ -82,7 +79,7 @@ public class FileBufferTest {
     fileBuffer.resetBuffer();
     assertNull(fileBuffer.getByteBuffer());
     assertFalse(fileBuffer.isInitialized);
-    assertNull(fileBuffer.getFilePath());
+    assertNull(fileBuffer.getDst_path());
     assertEquals(-1, fileBuffer.getFileSize());
     assertEquals(0, fileBuffer.getExpectedOffsetPointer());
     assertEquals(-1, fileBuffer.getFinalOffsetPointer());

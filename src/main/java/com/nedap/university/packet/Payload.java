@@ -5,14 +5,17 @@ public class Payload {
   private final int offsetPointer;
   public final boolean isFinalPacket;
 
-  public Payload(String file_dir, long fileSize, boolean isFinalPacket) {
-    byte[] fileDirectoryBytes = file_dir.getBytes();
+  public Payload(String src_dir, String dst_dir, long fileSize, boolean isFinalPacket) {
+    byte[] fileSrcBytes = src_dir.getBytes();
+    byte[] fileDstBytes = dst_dir.getBytes();
     byte[] fileSizeBytes = String.valueOf(fileSize).getBytes();
-    byte[] payload = new byte[fileDirectoryBytes.length + fileSizeBytes.length + 1];
+    byte[] payload = new byte[fileSrcBytes.length + 1 + fileDstBytes.length  + 1 + fileSizeBytes.length];
 
-    System.arraycopy(fileDirectoryBytes, 0, payload, 0, fileDirectoryBytes.length);
-    payload[fileDirectoryBytes.length] = '~';
-    System.arraycopy(fileSizeBytes, 0, payload, fileDirectoryBytes.length + 1, fileSizeBytes.length);
+    System.arraycopy(fileSrcBytes, 0, payload, 0, fileSrcBytes.length);
+    payload[fileSrcBytes.length] = '~';
+    System.arraycopy(fileDstBytes, 0, payload, fileSrcBytes.length + 1, fileDstBytes.length);
+    payload[fileSrcBytes.length + 1 + fileDstBytes.length] = '~';
+    System.arraycopy(fileSizeBytes, 0, payload, fileSrcBytes.length + 1 + fileDstBytes.length + 1, fileSizeBytes.length);
 
     byteArray = payload;
     offsetPointer = 0;
@@ -37,10 +40,19 @@ public class Payload {
     return byteArray.length;
   }
 
-  public static String[] getStringArray(byte[] payload) {
-      return new String(payload).split("~");
-  }
   public String[] getStringArray() {
     return new String(byteArray).split("~");
+  }
+
+  public String getSrcPath() {
+    return getStringArray()[0];
+  }
+
+  public String getDstPath() {
+    return getStringArray()[1];
+  }
+
+  public int getFileSize() {
+    return Integer.parseInt(getStringArray()[2]);
   }
 }

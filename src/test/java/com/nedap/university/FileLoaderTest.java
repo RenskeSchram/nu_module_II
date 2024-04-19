@@ -57,7 +57,7 @@ public class FileLoaderTest {
 
   @Test
   void testGetInitPacket() throws IOException {
-    Packet initPacket = fileLoader.getInitPacket(TEST_DST_FILE_PATH, Files.size(testFile));
+    Packet initPacket = fileLoader.getInitPacket(TEST_DST_FILE_PATH, TEST_DST_FILE_PATH, Files.size(testFile));
 
     assertEquals((byte) 0b00000011, initPacket.getHeader().getFlagByte());
 

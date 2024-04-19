@@ -1,5 +1,7 @@
 package com.nedap.university;
 
+import com.nedap.university.packet.Header;
+import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Payload;
 import com.nedap.university.utils.Parameters;
@@ -10,7 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.text.ParseException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,7 +20,7 @@ public class FileBuffer {
   private ByteBuffer byteBuffer;
   private Map<Integer, byte[]> savedPackets;
 
-  private String filePath;
+  private String dst_path;
   private int fileSize;
 
   private int expectedOffsetPointer = 0;
@@ -32,16 +34,27 @@ public class FileBuffer {
 
   public void initFileBuffer(Payload payload) {
     String[] stringArray = payload.getStringArray();
+    System.out.println(Arrays.toString(stringArray));
     if (stringArray != null & !isInitialized) {
-      this.filePath = stringArray[0];
-      this.fileSize = Integer.parseInt(stringArray[1]);
+      this.dst_path = stringArray[1];
+      this.fileSize = Integer.parseInt(stringArray[2]);
       byteBuffer = ByteBuffer.allocate(fileSize);
       isInitialized = true;
     }
   }
 
+  public Packet getInitPacket(String src_dir, String dst_dir) {
+    Payload payload = new Payload(src_dir, dst_dir,0, false);
+    Header header = new Header(payload);
+    header.setFlag(FLAG.HELLO);
+    header.setFlag(FLAG.GET);
+
+    return new Packet(header, payload);
+  }
+
   public void receivePacket(Payload payload) {
     int offsetPointer = payload.getOffsetPointer();
+    System.out.println("received packet with offsetpointer" + offsetPointer);
     if (expectedOffsetPointer == offsetPointer) {
       writePacketsToBuffer(payload.getByteArray(), offsetPointer);
       checkSavedPackets();
@@ -79,7 +92,7 @@ public class FileBuffer {
     byteBuffer = null;
     savedPackets = new HashMap<>();
 
-    filePath = null;
+    dst_path = null;
     fileSize = -1;
 
     expectedOffsetPointer = 0;
@@ -103,8 +116,8 @@ public class FileBuffer {
 
   void writeBufferToFile() {
     try {
-      Path path = Paths.get(filePath);
-      try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+      Path path = Paths.get(dst_path);
+      try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
         System.out.println(byteBuffer.array().length);
         byteBuffer.flip();
         while (byteBuffer.hasRemaining()) {
@@ -113,9 +126,9 @@ public class FileBuffer {
         }
       }
 
-      String s = Paths.get(filePath).toAbsolutePath().toString();
+      String s = Paths.get(dst_path).toAbsolutePath().toString();
       System.out.println("Created file  is: " + s);
-      System.out.println("Current file size is: " + Files.size(Paths.get(filePath)));
+      System.out.println("Current file size is: " + Files.size(Paths.get(dst_path)));
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -124,14 +137,15 @@ public class FileBuffer {
 
   public void receiveFin(Payload payload) {
     finalOffsetPointer = payload.getOffsetPointer();
+    System.out.println("received final packet with offsetpointer" + finalOffsetPointer);
   }
 
   public int getFileSize() {
     return fileSize;
   }
 
-  public String getFilePath() {
-    return filePath;
+  public String getDst_path() {
+    return dst_path;
   }
 
   public int getExpectedOffsetPointer() {
@@ -146,5 +160,6 @@ public class FileBuffer {
     return finalOffsetPointer;
   }
 }
+
 
 
