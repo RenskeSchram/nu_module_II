@@ -35,6 +35,7 @@ public class FileLoader {
     Payload payload = new Payload(src_path, dst_path, size, false);
     Header header = new Header(payload);
     header.setFlag(FLAG.HELLO);
+    header.setFlag(FLAG.DATA);
 
     return new Packet(header, payload);
   }
@@ -58,6 +59,7 @@ public class FileLoader {
 
         Payload payload = new Payload(payloadByteArray, offsetPointer, isFinalPacket);
         Header header = new Header(payload);
+        header.setFlag(FLAG.DATA);
 
         offsetPointer++;
 
@@ -123,6 +125,7 @@ public class FileLoader {
         boolean isFinalPacket = (offsetPointer + 1) * Parameters.MAX_PAYLOAD_SIZE >= fileLength;
         Payload payload = new Payload(payloadByteArray, offsetPointer, isFinalPacket);
         Header header = new Header(payload);
+        header.setFlag(FLAG.DATA);
 
         packetList.add(new Packet(header, payload));
 
@@ -154,6 +157,7 @@ public class FileLoader {
 
       Payload payload = new Payload(payloadByteArray, offsetPointer, isFinalPacket);
       Header header = new Header(payload);
+      header.setFlag(FLAG.DATA);
       return new Packet(header, payload);
     }
   }

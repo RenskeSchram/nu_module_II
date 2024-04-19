@@ -47,7 +47,7 @@ public class HeaderTest {
   @Test
   void testSetWithDataPayload() {
     Payload payload = new Payload(new byte[100], 0, true);
-    header.setWithDataPayload(payload);
+    header.setWithPayload(payload);
     assertEquals(100, header.getPayloadDataSize());
     assertTrue(header.isFlagSet(Header.FLAG.FIN));
     assertTrue(header.isFlagSet(Header.FLAG.DATA));

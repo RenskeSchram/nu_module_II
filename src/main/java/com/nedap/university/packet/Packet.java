@@ -3,6 +3,7 @@ package com.nedap.university.packet;
 import static com.nedap.university.utils.Parameters.HEADER_SIZE;
 
 import com.nedap.university.packet.Header.FLAG;
+import com.nedap.university.utils.Checksum;
 import com.nedap.university.utils.Parameters;
 import java.nio.ByteBuffer;
 
@@ -16,6 +17,9 @@ public class Packet {
     this.header = header;
     this.payload = payload;
     this.size = Parameters.HEADER_SIZE + payload.getSize();
+
+    // set Checksum based on full packet
+    header.setChecksum(Checksum.calculateChecksum(this));
   }
 
   public Packet(byte[] byteArray) {

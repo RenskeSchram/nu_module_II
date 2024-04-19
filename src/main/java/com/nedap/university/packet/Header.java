@@ -2,6 +2,19 @@ package com.nedap.university.packet;
 
 import com.nedap.university.utils.Parameters;
 
+/**
+ * Protocol header for UDP file exchange.
+ *
+ *       __ Element __       __ Bytes __     __ Length __
+ *        PayloadDataSize       [0-1]           2
+ *        OffsetPointer         [2-3]           2
+ *        Ack number            [4-5]           2
+ *        Sequence number       [6-7]           2
+ *        Checksum              [8-9]           2
+ *        Flags                 [10]            1
+ *        Unassigned            [11]            1
+ */
+
 public class Header {
   private byte[] byteArray;
 
@@ -11,7 +24,7 @@ public class Header {
 
   public Header(Payload payload) {
     byteArray = new byte[Parameters.HEADER_SIZE];
-    setWithDataPayload(payload);
+    setWithPayload(payload);
   }
 
   public int getSize() {
@@ -73,7 +86,6 @@ public class Header {
 
   public int getChecksum() {
     return ((byteArray[8] & 0xFF) << 8) | (byteArray[9] & 0xFF);
-
   }
 
   public void setFlagByte(byte flagByte) {
@@ -92,11 +104,9 @@ public class Header {
     return (byteArray[10] & (1 << flag.byteLocation)) != 0;
   }
 
-  public void setWithDataPayload(Payload payload) {
+  public void setWithPayload(Payload payload) {
     setPayloadDataSize(payload.getByteArray().length);
     setOffsetPointer(payload.getOffsetPointer());
-
-    setFlag(FLAG.DATA);
 
     if (payload.isFinalPacket) {
       setFlag(FLAG.FIN);

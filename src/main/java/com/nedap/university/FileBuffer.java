@@ -41,7 +41,6 @@ public class FileBuffer {
       byteBuffer = ByteBuffer.allocate(fileSize);
       isInitialized = true;
     }
-    System.out.println("BUFFER initiated");
   }
 
   public Packet getInitPacket(String src_dir, String dst_dir) {
@@ -53,9 +52,7 @@ public class FileBuffer {
   }
 
   public void receivePacket(Payload payload) {
-    int offsetPointer = payload.getOffsetPointer();
-    System.out.println("received packet with offsetpointer" + offsetPointer);
-    if (expectedOffsetPointer == offsetPointer) {
+    int offsetPointer = payload.getOffsetPointer();if (expectedOffsetPointer == offsetPointer) {
       writePacketsToBuffer(payload.getByteArray(), offsetPointer);
       checkSavedPackets();
     } else {
@@ -127,9 +124,7 @@ public class FileBuffer {
       }
 
       String s = Paths.get(dst_path).toAbsolutePath().toString();
-      System.out.println("Created file  is: " + s);
-      System.out.println("Current file size is: " + Files.size(Paths.get(dst_path)));
-
+      System.out.println("Created file" + s + "with size" + Files.size(Paths.get(dst_path)) + "bytes");
     } catch (IOException e) {
       e.printStackTrace();
     }
