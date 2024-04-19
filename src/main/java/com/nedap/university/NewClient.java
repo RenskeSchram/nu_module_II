@@ -50,7 +50,6 @@ public class NewClient {
     while (inService) {
       DatagramPacket request = new DatagramPacket(new byte[Parameters.MAX_PACKET_SIZE], Parameters.MAX_PACKET_SIZE);
       socket.receive(request);
-      System.out.println("received package");
       System.out.println(new String(request.getData(), 0, request.getLength()));
       Packet receivedPacket = new Packet(request.getData());
 

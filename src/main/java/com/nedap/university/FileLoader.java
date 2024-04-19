@@ -48,12 +48,12 @@ public class FileLoader {
             fileLength - offsetPointer * Parameters.MAX_PAYLOAD_SIZE, Parameters.MAX_PAYLOAD_SIZE);
 
         ByteBuffer buffer = ByteBuffer.allocate(remainingBytes);
+        fileChannel.position((long) offsetPointer * Parameters.MAX_PAYLOAD_SIZE);
         fileChannel.read(buffer);
         buffer.flip();
 
         byte[] payloadByteArray = new byte[remainingBytes];
         buffer.get(payloadByteArray);
-
         boolean isFinalPacket = (offsetPointer + 1) * Parameters.MAX_PAYLOAD_SIZE >= fileLength;
 
         Payload payload = new Payload(payloadByteArray, offsetPointer, isFinalPacket);

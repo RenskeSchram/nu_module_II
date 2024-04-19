@@ -41,6 +41,7 @@ public class FileBuffer {
       byteBuffer = ByteBuffer.allocate(fileSize);
       isInitialized = true;
     }
+    System.out.println("BUFFER initiated");
   }
 
   public Packet getInitPacket(String src_dir, String dst_dir) {
