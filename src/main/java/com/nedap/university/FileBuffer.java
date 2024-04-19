@@ -47,8 +47,7 @@ public class FileBuffer {
   public Packet getInitPacket(String src_dir, String dst_dir) {
     Payload payload = new Payload(src_dir, dst_dir,0, false);
     Header header = new Header(payload);
-    header.setFlag(FLAG.HELLO);
-    header.setFlag(FLAG.GET);
+    header.setFlagByte((byte) 0b00000101);
 
     return new Packet(header, payload);
   }
@@ -120,7 +119,7 @@ public class FileBuffer {
       Path path = Paths.get(dst_path);
       try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
         System.out.println(byteBuffer.array().length);
-        byteBuffer.flip();
+        byteBuffer.rewind();
         while (byteBuffer.hasRemaining()) {
           fileChannel.write(byteBuffer);
           System.out.println(fileChannel.size());
@@ -138,7 +137,6 @@ public class FileBuffer {
 
   public void receiveFin(Payload payload) {
     finalOffsetPointer = payload.getOffsetPointer();
-    System.out.println("received final packet with offsetpointer" + finalOffsetPointer);
   }
 
   public int getFileSize() {

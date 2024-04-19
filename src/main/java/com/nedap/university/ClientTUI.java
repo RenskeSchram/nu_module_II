@@ -13,6 +13,8 @@ import java.util.Scanner;
 public class ClientTUI {
   boolean runTui = true;
   NewClient client;
+  String CLIENT_HOME = "example_files/";
+  String SERVER_HOME =  "home/pi/PiServer/";
 
   ClientTUI() throws SocketException {
     client = new NewClient();
@@ -25,7 +27,7 @@ public class ClientTUI {
     InetAddress hostname = null;
     boolean validHostname = false;
     while (!validHostname) {
-      System.out.print("PI_hostname:     \n");
+      //System.out.print("PI_hostname:     \n");
       try {
         //hostname = InetAddress.getByName(scanner.nextLine());
         hostname = InetAddress.getByName("172.16.1.1");
@@ -39,7 +41,7 @@ public class ClientTUI {
     int port = -1;
     boolean validPort = false;
     while (!validPort) {
-      System.out.print("port:       \n");
+      //System.out.print("port:       \n");
       try {
         //port = scanner.nextInt();
         port = 8080;
@@ -96,29 +98,28 @@ public class ClientTUI {
       switch (protocol[0].toLowerCase()) {
         case "send":
           if (protocol.length == 3) {
-            System.out.println("sending file");
-            protocol[1] = "example_files/tiny.pdf";
-            protocol[2] = "home/pi/PiServer/tiny_output.pdf";
-            client.uploadFile(protocol[1], protocol[2]);
+            //protocol[1] = "tiny.pdf";
+            //protocol[2] = "tiny_output.pdf";
+            client.uploadFile(CLIENT_HOME + protocol[1], SERVER_HOME + protocol[2]);
           } else {
             System.out.println("Invalid input length, try again.");
           }
           break;
         case "get":
           if (protocol.length == 3) {
-            System.out.println("retrieving file file");
-            protocol[1] = "home/pi/PiServer/tiny_output.pdf";
-            protocol[2] = "example_files/tiny.pdf";
-            client.downloadFile(protocol[1], protocol[2]);
+            //protocol[1] = "tiny_output.pdf";
+            //protocol[2] = "tiny.pdf";
+            client.downloadFile(SERVER_HOME + protocol[1], CLIENT_HOME + protocol[2]);
           } else {
             System.out.println("Invalid input length, try again.");
           }
           break;
         case "list":
-          if (protocol.length == 2) {
-            System.out.println("retrieving list");
-            protocol[1] = "home/pi/PiServer/";
-            client.getList(protocol[1]);
+          if (protocol.length == 1) {
+            client.getList(SERVER_HOME);
+          } else if (protocol.length == 2) {
+            //protocol[1] = "home/pi/PiServer/";
+            client.getList(SERVER_HOME + protocol[1]);
           } else {
             System.out.println("Invalid input length, try again.");
           }

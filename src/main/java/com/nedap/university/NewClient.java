@@ -1,5 +1,6 @@
 package com.nedap.university;
 
+import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;
@@ -26,6 +27,7 @@ public class NewClient {
     socket = new DatagramSocket(port);
     serviceHandler = new ServiceHandler();
     inService = false;
+    finalServiceAck = -1;
   }
 
   public void uploadFile(String src_dir, String dst_dir) throws IOException, InterruptedException {
@@ -39,7 +41,6 @@ public class NewClient {
   public void downloadFile(String src_dir, String dst_dir) throws IOException, InterruptedException {
     System.out.println("DOWNLOAD STARTED");
     Packet startDownloadPacket = serviceHandler.startDownload(src_dir, dst_dir);
-    setFinalServiceAck(startDownloadPacket);
     sendPacket(startDownloadPacket, InetAddress.getByName(host), port);
     service();
   }
@@ -50,7 +51,6 @@ public class NewClient {
     while (inService) {
       DatagramPacket request = new DatagramPacket(new byte[Parameters.MAX_PACKET_SIZE], Parameters.MAX_PACKET_SIZE);
       socket.receive(request);
-      System.out.println(new String(request.getData(), 0, request.getLength()));
       Packet receivedPacket = new Packet(request.getData());
 
       if (isValidPacket(receivedPacket)) {
@@ -58,7 +58,15 @@ public class NewClient {
 
         //Check if final packet
         if (receivedPacket.getHeader().getAckNr() == finalServiceAck) {
-          System.out.println("SERVICE FINISHED");
+          finalServiceAck = -1;
+          System.out.println("UPLOAD FINISHED");
+          break;
+        }
+
+        if (receivedPacket.getHeader().isFlagSet(FLAG.FIN)) {
+          serviceHandler.handlePacket(receivedPacket);
+          finalServiceAck = -1;
+          System.out.println("DOWNLOAD FINISHED");
           break;
         }
 
@@ -89,7 +97,6 @@ public class NewClient {
   private void sendPacket(Packet packet, InetAddress dstAddress, int dstPort) throws IOException {
       DatagramPacket datagramPacket = new DatagramPacket(packet.getByteArray(), packet.getSize(), dstAddress, dstPort);
       socket.send(datagramPacket);
-      System.out.println("Packet send");
     }
 
   public void getList(String src_dir) {
