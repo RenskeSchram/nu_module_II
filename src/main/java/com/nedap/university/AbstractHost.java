@@ -39,7 +39,11 @@ public abstract class AbstractHost implements Host {
   public void sendPacket(Packet packet, InetAddress dstAddress, int dstPort) throws IOException {
     packet.getHeader().setChecksum(Checksum.calculateChecksum(packet));
     DatagramPacket datagramPacket = new DatagramPacket(packet.getByteArray(), packet.getSize(), dstAddress, dstPort);
-    setTimer(datagramPacket, packet.getHeader().getAckNr());
+
+    if (!packet.getHeader().isFlagSet(FLAG.ACK)) {
+      setTimer(datagramPacket, packet.getHeader().getAckNr());
+    }
+
     socket.send(datagramPacket);
   }
 

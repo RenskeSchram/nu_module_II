@@ -43,11 +43,10 @@ public class Server extends AbstractHost {
     inService = true;
 
     while (inService) {
-      System.out.println("service active");
       DatagramPacket request = new DatagramPacket(new byte[Parameters.MAX_PACKET_SIZE], Parameters.MAX_PACKET_SIZE);
       socket.receive(request);
       Packet receivedPacket = new Packet(request.getData());
-      System.out.println("received package with flags" + receivedPacket.getHeader().getFlagByte());
+      System.out.println("received package with flags " + receivedPacket.getHeader().getFlagByte());
 
       if (isValidPacket(receivedPacket)) {
         // cancel timer

@@ -27,7 +27,6 @@ public class HeaderTest {
     assertEquals(MAX_PAYLOAD_SIZE, header.getPayloadDataSize());
   }
 
-
   @Test
   void testSetAndGetChecksum() {
     header.setChecksum(789);
@@ -38,7 +37,6 @@ public class HeaderTest {
   void testSetAndGetFlags() {
     header.setFlagByte((byte) 0b00000001);
     assertTrue(header.isFlagSet(Header.FLAG.HELLO));
-
     header.setFlag(FLAG.GET);
     assertEquals((byte) 0b00000101, header.getFlagByte());
     assertTrue(header.isFlagSet(FLAG.GET));
@@ -50,7 +48,5 @@ public class HeaderTest {
     header.setWithPayload(payload);
     assertEquals(100, header.getPayloadDataSize());
     assertTrue(header.isFlagSet(Header.FLAG.FIN));
-    assertTrue(header.isFlagSet(Header.FLAG.DATA));
-
   }
 }

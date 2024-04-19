@@ -115,16 +115,14 @@ public class FileBuffer {
     try {
       Path path = Paths.get(dst_path);
       try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
-        System.out.println(byteBuffer.array().length);
         byteBuffer.rewind();
         while (byteBuffer.hasRemaining()) {
           fileChannel.write(byteBuffer);
-          System.out.println(fileChannel.size());
         }
       }
 
       String s = Paths.get(dst_path).toAbsolutePath().toString();
-      System.out.println("Created file" + s + "with size" + Files.size(Paths.get(dst_path)) + "bytes");
+      System.out.println("Created file " + s + " of " + Files.size(Paths.get(dst_path)) + " bytes");
     } catch (IOException e) {
       e.printStackTrace();
     }

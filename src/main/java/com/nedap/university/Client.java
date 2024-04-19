@@ -59,9 +59,6 @@ public class Client extends AbstractHost{
         if (!responsePackets.isEmpty()) {
           for (Packet packet : responsePackets) {
             sendPacket(packet, clientAddress, clientPort);
-
-            // if not ACK packet, set timer
-            //  -> createTimer(packet, new Timer(true));
           }
         }
       }

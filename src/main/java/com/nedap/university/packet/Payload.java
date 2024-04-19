@@ -5,6 +5,7 @@ public class Payload {
   private final int offsetPointer;
   public final boolean isFinalPacket;
 
+  // Create HELLO or GET payload
   public Payload(String src_dir, String dst_dir, long fileSize, boolean isFinalPacket) {
     byte[] fileSrcBytes = src_dir.getBytes();
     byte[] fileDstBytes = dst_dir.getBytes();
@@ -22,6 +23,7 @@ public class Payload {
     this.isFinalPacket = isFinalPacket;
   }
 
+  // Create payload from received byteArray
   public Payload(byte[] byteArray, int offsetPointer, boolean isFinalPacket) {
     this.byteArray = byteArray;
     this.offsetPointer = offsetPointer;
@@ -55,4 +57,6 @@ public class Payload {
   public int getFileSize() {
     return Integer.parseInt(getStringArray()[2]);
   }
+
+  public boolean isFinalPacket() {return isFinalPacket;}
 }
