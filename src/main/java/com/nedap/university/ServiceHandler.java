@@ -2,14 +2,11 @@ package com.nedap.university;
 
 import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Packet;
+import com.nedap.university.packet.PacketBuilder;
 import com.nedap.university.packet.Payload;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ServiceHandler {
   FileBuffer fileBuffer;
@@ -36,46 +33,37 @@ public class ServiceHandler {
     byte flags = header.getFlagByte();
 
     switch (flags) {
-      ///////////////////////////////////
-      //          Receiving            //
-      ///////////////////////////////////
+      default:
+        System.out.println("INVALID Flags, could not handle packet");
 
-      // HELLO + DATA
-      case (byte) 0b00000011:
+        // Receiving
+      case (byte) 0b00000011:   // HELLO + DATA
         fileBuffer.initFileBuffer(payload);
         break;
 
-        // DATA
-      case (byte) 0b00000010:
+      case (byte) 0b00000010:   // DATA
         fileBuffer.receivePacket(payload);
         break;
 
-        // DATA + FIN
-      case (byte) 0b00100010:
+      case (byte) 0b00100010:   // DATA + FIN
         fileBuffer.receiveFin(payload);
         fileBuffer.receivePacket(payload);
         lastFrameSent = lastAckReceived;
         break;
 
-      // LIST + FIN
-      case (byte) 0b00101000:
+      case (byte) 0b00101000:   // LIST + FIN
         printListPacket(payload);
         lastFrameSent = lastAckReceived;
         break;
 
-      ///////////////////////////////////
-      //           Sending             //
-      ///////////////////////////////////
-
-        // HELLO + GET
-      case (byte) 0b00000101:
+      // Sending
+      case (byte) 0b00000101:   // HELLO + GET
         Packet helloGetPacket = startUpload(payload.getSrcPath(), payload.getDstPath());
         helloGetPacket.getHeader().setAckNr(lastFrameSent + 1);
         packetsToSend.add(helloGetPacket);
         break;
 
-        // ACK
-      case (byte) 0b00010000:
+      case (byte) 0b00010000:   // ACK
         if (fileLoader.isInitiated()) {
           Packet packet = fileLoader.extractNextPacket();
           packet.getHeader().setAckNr(lastFrameSent + 1);
@@ -83,16 +71,11 @@ public class ServiceHandler {
         }
         break;
 
-      // HELLO + LIST
-      case (byte) 0b00001100:
+      case (byte) 0b00001100:   // HELLO + LIST
         Packet listPacket = getListPacket(payload);
         listPacket.getHeader().setAckNr(lastFrameSent + 1);
         packetsToSend.add(getListPacket(payload));
         break;
-
-      default:
-        System.out.println("INVALID Flags, could not handle packet");
-
     }
 
     for (Packet packet : packetsToSend) {
@@ -111,7 +94,7 @@ public class ServiceHandler {
   }
 
   public Packet startDownload(String src_path, String dst_path) {
-    Packet initPacket = fileBuffer.getInitPacket(src_path, dst_path);
+    Packet initPacket = PacketBuilder.getInitBuilderPacket(src_path, dst_path);
     initPacket.getHeader().setAckNr(lastFrameSent + 1);
     lastFrameSent++;
     return initPacket;
@@ -119,57 +102,23 @@ public class ServiceHandler {
 
   private void printListPacket(Payload payload) {
     String[] fileNames = payload.getStringArray();
-
     System.out.println("The following files are in the requested folder on the PiServer:");
-
     for (String fileName : fileNames) {
       System.out.println("   - " + fileName);
     }
   }
 
   private Packet getListPacket(Payload payload) {
-    List<String> fileNames = null;
-
-    System.out.println(Paths.get(payload.getSrcPath()));
-
-    try (var directoryStream = Files.list(Paths.get(payload.getSrcPath()))) {
-      fileNames = directoryStream.map(Path::getFileName).map(Path::toString).collect(Collectors.toList());
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    StringBuilder fileNameString = new StringBuilder();
-    if (fileNames != null) {
-      for (int i = 0; i < fileNames.size(); i++) {
-        fileNameString.append(fileNames.get(i));
-        if (i < fileNames.size() - 1) {
-          fileNameString.append("~");
-        }
-      }} else {fileNameString.append("");
-    }
-    Payload listPayload = new Payload(fileNameString.toString().getBytes(), 0 , true);
-    Header header = new Header(listPayload);
-    header.setFlagByte((byte) 0b00101000);
-    header.setAckNr(lastFrameSent + 1);
+    Packet listPacket = PacketBuilder.listPacket(payload);
+    listPacket.getHeader().setAckNr(lastFrameSent + 1);
     lastFrameSent++;
-
-    return new Packet(header, listPayload);
+    return listPacket;
   }
 
   public Packet getHelloListPacket(String src_dir) {
-    Payload payload = new Payload(src_dir.toString().getBytes(), 0 , false);
-    Header header = new Header(payload);
-    header.setFlagByte((byte) 0b00001100);
-    header.setAckNr(lastFrameSent + 1);
+    Packet helloListPacket = PacketBuilder.helloListPacket(src_dir);
+    helloListPacket.getHeader().setAckNr(lastFrameSent + 1);
     lastFrameSent++;
-    return new Packet(header, payload);
-  }
-
-  public static Packet getAckPacket(int AckNr) {
-    Payload payload = new Payload(new byte[1], 0, false);
-    Header header = new Header(payload);
-    header.setAckNr(AckNr);
-    header.setFlagByte((byte) 0b00010000);
-    return new Packet(header, payload);
+    return helloListPacket;
   }
 }

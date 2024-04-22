@@ -2,6 +2,7 @@ package com.nedap.university;
 
 
 import com.nedap.university.packet.Packet;
+import com.nedap.university.packet.PacketBuilder;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -27,7 +28,7 @@ public class PacketHandlerTest {
 
   @Test
   public void testPacketHandler() throws IOException {
-    Packet initPacket = fileLoader.getInitPacket(TEST_SRC_FILE_PATH, TEST_DST_FILE_PATH, Files.size(Paths.get(TEST_SRC_FILE_PATH)));
+    Packet initPacket = PacketBuilder.getInitLoaderPacket(TEST_SRC_FILE_PATH, TEST_DST_FILE_PATH, Files.size(Paths.get(TEST_SRC_FILE_PATH)));
     serviceHandler.handlePacket(initPacket);
 
     for (Packet packet: packetList) {

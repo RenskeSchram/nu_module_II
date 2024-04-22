@@ -2,6 +2,7 @@ package com.nedap.university;
 
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
+import com.nedap.university.packet.PacketBuilder;
 import com.nedap.university.packet.Payload;
 import java.util.Collections;
 import java.util.List;
@@ -32,7 +33,7 @@ public class FileBufferTest {
 
   @AfterEach
   public void tearDown() {
-    Path path = Paths.get(TEST_DST_FILE_PATH+"not");
+    Path path = Paths.get(TEST_DST_FILE_PATH + "not");
     try {
       Files.deleteIfExists(path);
     } catch (IOException e) {
@@ -44,7 +45,7 @@ public class FileBufferTest {
 
   public void testInitFileBuffer() throws IOException {
     Path src_path = Paths.get(TEST_SRC_FILE_PATH);
-    Packet initPacket = fileLoader.getInitPacket(TEST_SRC_FILE_PATH, TEST_DST_FILE_PATH, Files.size(
+    Packet initPacket = PacketBuilder.getInitLoaderPacket(TEST_SRC_FILE_PATH, TEST_DST_FILE_PATH, Files.size(
         src_path));
     fileBuffer.initFileBuffer(initPacket.getPayload());
     assertTrue(initPacket.getHeader().isFlagSet(FLAG.HELLO));

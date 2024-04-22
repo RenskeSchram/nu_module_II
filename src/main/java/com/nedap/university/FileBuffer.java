@@ -43,14 +43,6 @@ public class FileBuffer {
     }
   }
 
-  public Packet getInitPacket(String src_dir, String dst_dir) {
-    Payload payload = new Payload(src_dir, dst_dir,0, false);
-    Header header = new Header(payload);
-    header.setFlagByte((byte) 0b00000101);
-
-    return new Packet(header, payload);
-  }
-
   public void receivePacket(Payload payload) {
     int offsetPointer = payload.getOffsetPointer();
     if (expectedOffsetPointer == offsetPointer) {
@@ -153,6 +145,3 @@ public class FileBuffer {
     return finalOffsetPointer;
   }
 }
-
-
-

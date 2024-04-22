@@ -5,6 +5,7 @@ import static com.nedap.university.utils.Parameters.TIMEOUT_DURATION;
 
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
+import com.nedap.university.packet.PacketBuilder;
 import com.nedap.university.utils.Checksum;
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;
@@ -45,25 +46,26 @@ public abstract class AbstractHost implements Host {
       DatagramPacket request = new DatagramPacket(new byte[Parameters.MAX_PACKET_SIZE], Parameters.MAX_PACKET_SIZE);
       socket.receive(request);
       Packet receivedPacket = new Packet(request.getData());
+      int receivedAck = receivedPacket.getHeader().getAckNr();
 
       if (isValidPacket(receivedPacket)) {
         InetAddress clientAddress = request.getAddress();
         int clientPort = request.getPort();
 
         // cancel timer
-        cancelTimer(receivedPacket.getHeader().getAckNr());
+        cancelTimer(receivedAck);
         //send ACK
         if (receivedPacket.getHeader().getFlagByte() != 0b00010000) {
-          sendPacket(ServiceHandler.getAckPacket(receivedPacket.getHeader().getAckNr()), clientAddress, clientPort);
+          sendPacket(PacketBuilder.getAckPacket(receivedAck), clientAddress, clientPort);
         }
 
-        if (!outOfOrderPackets.containsKey(receivedPacket.getHeader().getAckNr())) {
-          if (receivedPacket.getHeader().getAckNr() == lastFrameReceived + 1) {
+        if (!outOfOrderPackets.containsKey(receivedAck)) {
+          if (receivedAck == lastFrameReceived + 1) {
             handlePacket(request);
             checkOutOfOrderPackets();
           } else {
             System.out.println("packet put on hold");
-            outOfOrderPackets.put(receivedPacket.getHeader().getAckNr(), request);
+            outOfOrderPackets.put(receivedAck, request);
           }
         }
       } else {
@@ -80,14 +82,14 @@ public abstract class AbstractHost implements Host {
     if (!packet.getHeader().isFlagSet(FLAG.ACK)) {
       setTimer(datagramPacket, packet.getHeader().getAckNr());
     }
-    System.out.println("PACKET send with ACK nr: " + packet.getHeader().getAckNr()+ " and flags " + packet.getHeader().getFlagByte());
+    //System.out.println("PACKET send with ACK nr: " + packet.getHeader().getAckNr()+ " and flags " + packet.getHeader().getFlagByte());
 
     socket.send(datagramPacket);
   }
 
   @Override
   public boolean isValidPacket(Packet receivedPacket) {
-    System.out.println("PACKET received with ACK nr: " + receivedPacket.getHeader().getAckNr() + " and flags " + receivedPacket.getHeader().getFlagByte());
+    //System.out.println("PACKET received with ACK nr: " + receivedPacket.getHeader().getAckNr() + " and flags " + receivedPacket.getHeader().getFlagByte());
 
     boolean correctChecksum = Checksum.verifyChecksum(receivedPacket);
     boolean inReceivingWindow = withinWindow(receivedPacket.getHeader().getAckNr());
@@ -102,6 +104,12 @@ public abstract class AbstractHost implements Host {
     }
   }
 
+  void updateLastFrameReceived(int AckNr) {
+    lastFrameReceived = AckNr;
+    largestAcceptableFrame = lastFrameReceived + windowSize;
+    //System.out.println("RECEIVING    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
+  }
+
   void checkOutOfOrderPackets() throws IOException {
     if (outOfOrderPackets.containsKey(lastFrameReceived + 1)) {
       handlePacket(outOfOrderPackets.get(lastFrameReceived + 1));
@@ -110,9 +118,6 @@ public abstract class AbstractHost implements Host {
   }
 
   void handlePacket(DatagramPacket datagramPacket) throws IOException {}
-
-
-
 
   public synchronized void setTimer(DatagramPacket datagramPacket, int ackNr) {
     Timer timer = new Timer();

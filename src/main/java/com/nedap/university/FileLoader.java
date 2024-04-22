@@ -6,6 +6,7 @@ import static com.nedap.university.utils.Parameters.MAX_PAYLOAD_SIZE;
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Header;
+import com.nedap.university.packet.PacketBuilder;
 import com.nedap.university.packet.Payload;
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;
@@ -28,16 +29,7 @@ public class FileLoader {
     this.src_path = Paths.get(src_path);
     this.offsetPointer = 0;
     this.finalOffsetPointer = (int) Math.ceil((double) Files.size(this.src_path) / Parameters.MAX_PAYLOAD_SIZE);
-    return getInitPacket(src_path, dst_path, Files.size(this.src_path));
-  }
-
-  public Packet getInitPacket(String src_path, String dst_path, long size) {
-    Payload payload = new Payload(src_path, dst_path, size, false);
-    Header header = new Header(payload);
-    header.setFlag(FLAG.HELLO);
-    header.setFlag(FLAG.DATA);
-
-    return new Packet(header, payload);
+    return PacketBuilder.getInitLoaderPacket(src_path, dst_path, Files.size(this.src_path));
   }
 
   public Packet extractNextPacket() {

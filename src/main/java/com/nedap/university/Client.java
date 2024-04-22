@@ -15,6 +15,9 @@ public class Client extends AbstractHost{
 
   private int finalReceivingAck;
 
+  private long startTime;
+  private long endTime;
+
   Client(InetAddress dstAddress, int port) throws SocketException {
     super(port);
     this.dstPort = port;
@@ -24,24 +27,25 @@ public class Client extends AbstractHost{
 
   protected void handlePacket(DatagramPacket datagramPacket) throws IOException {
     Packet receivedPacket = new Packet(datagramPacket.getData());
+    int receivedAck = receivedPacket.getHeader().getAckNr();
 
     //Check if final packet
-    if (receivedPacket.getHeader().getAckNr() == finalReceivingAck) {
+    if (receivedAck == finalReceivingAck) {
       finalReceivingAck = -1;
-      lastFrameReceived = receivedPacket.getHeader().getAckNr();
-      largestAcceptableFrame = lastFrameReceived + windowSize;
-      System.out.println("RECEIVING    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
-      System.out.println("UPLOAD FINISHED");
+      updateLastFrameReceived(receivedAck);
+      //System.out.println("RECEIVING    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
+      endTime = System.currentTimeMillis();
+      System.out.println("UPLOAD FINISHED in " + (endTime - startTime) + " milliseconds");
       inService = false;
       return;
     }
+
     if (receivedPacket.getHeader().isFlagSet(FLAG.FIN)) {
       serviceHandler.handlePacket(receivedPacket);
       finalReceivingAck = -1;
-      lastFrameReceived = receivedPacket.getHeader().getAckNr();
-      largestAcceptableFrame = lastFrameReceived + windowSize;
-      System.out.println("RECEIVING    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
-      System.out.println("DOWNLOAD FINISHED");
+      updateLastFrameReceived(receivedAck);
+      endTime = System.currentTimeMillis();
+      System.out.println("DOWNLOAD FINISHED in " + (endTime - startTime) + " milliseconds");
       inService = false;
       return;
     }
@@ -55,22 +59,14 @@ public class Client extends AbstractHost{
       }
     }
 
-    outOfOrderPackets.remove(receivedPacket.getHeader().getAckNr());
-    lastFrameReceived = receivedPacket.getHeader().getAckNr();
-    largestAcceptableFrame = lastFrameReceived + windowSize;
-    System.out.println("RECEIVING    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
+    outOfOrderPackets.remove(receivedAck);
+    updateLastFrameReceived(receivedAck);
   }
-
-  protected void checkOutOfOrderPackets() throws IOException {
-    if (outOfOrderPackets.containsKey(lastFrameReceived + 1)) {
-      handlePacket(outOfOrderPackets.get(lastFrameReceived + 1));
-      checkOutOfOrderPackets();
-    }
-  }
-
 
   public void uploadFile(String src_dir, String dst_dir) throws IOException {
     System.out.println("UPLOAD STARTED");
+    startTime = System.currentTimeMillis();
+
     Packet startUploadPacket = serviceHandler.startUpload(src_dir, dst_dir);
     setFinalReceivingAck(startUploadPacket);
     sendPacket(startUploadPacket, dstInetAdress, dstPort);
@@ -79,6 +75,8 @@ public class Client extends AbstractHost{
 
   public void downloadFile(String src_dir, String dst_dir) throws IOException {
     System.out.println("DOWNLOAD STARTED");
+    startTime = System.currentTimeMillis();
+
     Packet startDownloadPacket = serviceHandler.startDownload(src_dir, dst_dir);
     sendPacket(startDownloadPacket, dstInetAdress, dstPort);
     service();
@@ -96,5 +94,3 @@ public class Client extends AbstractHost{
     this.finalReceivingAck = servicePacket.getHeader().getAckNr() + numOfPackets;
   }
 }
-
-

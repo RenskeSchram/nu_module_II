@@ -52,7 +52,7 @@ public class Server extends AbstractHost {
 
     outOfOrderPackets.remove(receivedPacket.getHeader().getAckNr());
     lastFrameReceived = receivedPacket.getHeader().getAckNr();
-    largestAcceptableFrame =lastFrameReceived + windowSize;
+    largestAcceptableFrame = lastFrameReceived + windowSize;
 
     System.out.println("RECEIVING    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
   }
