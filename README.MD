@@ -11,8 +11,8 @@ With this repository, a Raspberry Pi can be used as a wireless storage medium, w
 
 The application consists of two main parts:
 
- o The Server: storage application on the Raspberry Pi
- o The Client: an application which connects to the Pi, running from a laptop
+ - The Server: storage application on the Raspberry Pi.
+ - The Client: an application which connects to the Pi, running from a laptop.
 
 
 # Raspberry Pi Usage Guide
