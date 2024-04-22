@@ -39,7 +39,9 @@ public class ClientTUI {
       try {
         port = scanner.nextInt();
         //port = 8080;
-        validPort = true;
+        if (port > 999 && port < 65535) {
+          validPort = true;
+        }
       } catch (InputMismatchException e) {
         System.err.println("Invalid port. Please enter a valid port.");
         scanner.nextLine();

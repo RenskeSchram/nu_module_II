@@ -1,6 +1,7 @@
 package com.nedap.university;
 
 import com.nedap.university.ServiceHandler;
+import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.utils.Parameters;
 import java.io.*;
@@ -10,8 +11,6 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Server extends AbstractHost {
-
-  private boolean inService;
 
   public Server(int port) throws SocketException {
     super(port);
@@ -26,8 +25,7 @@ public class Server extends AbstractHost {
     int port = Integer.parseInt(args[0]);
     System.out.println("starting at port" + port);
 
-    while(true) {
-
+    while (true) {
       try {
         Server server = new Server(port);
         server.service();
@@ -39,34 +37,24 @@ public class Server extends AbstractHost {
     }
   }
 
-  public void service() throws IOException {
-    inService = true;
+  @Override
+  void handlePacket(DatagramPacket datagramPacket) throws IOException {
+    Packet receivedPacket = new Packet(datagramPacket.getData());
 
-    while (inService) {
-      DatagramPacket request = new DatagramPacket(new byte[Parameters.MAX_PACKET_SIZE], Parameters.MAX_PACKET_SIZE);
-      socket.receive(request);
-      Packet receivedPacket = new Packet(request.getData());
-      System.out.println("received package with flags " + receivedPacket.getHeader().getFlagByte());
+    //Get and send response packet(s)
+    List<Packet> responsePackets = serviceHandler.handlePacket(receivedPacket);
 
-      if (isValidPacket(receivedPacket)) {
-        // cancel timer
-        cancelTimer(receivedPacket.getHeader().getAckNr());
-
-        List<Packet> responsePackets = serviceHandler.handlePacket(receivedPacket);
-
-        InetAddress clientAddress = request.getAddress();
-        int clientPort = request.getPort();
-
-        if (!responsePackets.isEmpty()) {
-          for (Packet packet : responsePackets) {
-            sendPacket(packet, clientAddress, clientPort);
-
-            // if not ACK packet, set timer
-            //  -> createTimer(packet, new Timer(true));
-          }
-        }
+    if (!responsePackets.isEmpty()) {
+      for (Packet packet : responsePackets) {
+        sendPacket(packet, datagramPacket.getAddress(), datagramPacket.getPort());
       }
     }
+
+    outOfOrderPackets.remove(receivedPacket.getHeader().getAckNr());
+    lastFrameReceived = receivedPacket.getHeader().getAckNr();
+    largestAcceptableFrame =lastFrameReceived + windowSize;
+
+    System.out.println("RECEIVING    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
   }
 }
 

@@ -18,7 +18,7 @@ public class QuoteClient {
 //        }
  
 //        String hostname = args[0];
-        String hostname = "172.16.1.1";
+        String hostname = "172.16.1.2";
 
 //        int port = Integer.parseInt(args[1]);
         int port = 8080;

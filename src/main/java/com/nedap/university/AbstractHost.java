@@ -22,9 +22,13 @@ public abstract class AbstractHost implements Host {
   protected DatagramSocket socket;
   protected ServiceHandler serviceHandler;
   protected boolean inService;
+
+  int windowSize = 3;
+  int lastFrameReceived = -1;
+  int largestAcceptableFrame = lastFrameReceived + windowSize;
+  HashMap<Integer, DatagramPacket> outOfOrderPackets = new HashMap<>();
+
   protected HashMap<Integer, Timer> unacknowledgedPackets;
-  protected HashMap<Integer, Packet> outOfOrderPackets;
-  private int finalServiceAck;
 
   public AbstractHost(int port) throws SocketException {
     socket = new DatagramSocket(port);
@@ -33,8 +37,40 @@ public abstract class AbstractHost implements Host {
     unacknowledgedPackets = new HashMap<>();
   }
 
-  @Override
-  public void service() throws IOException {}
+
+  public void service() throws IOException {
+    inService = true;
+
+    while (inService) {
+      DatagramPacket request = new DatagramPacket(new byte[Parameters.MAX_PACKET_SIZE], Parameters.MAX_PACKET_SIZE);
+      socket.receive(request);
+      Packet receivedPacket = new Packet(request.getData());
+
+      if (isValidPacket(receivedPacket)) {
+        InetAddress clientAddress = request.getAddress();
+        int clientPort = request.getPort();
+
+        // cancel timer
+        cancelTimer(receivedPacket.getHeader().getAckNr());
+        //send ACK
+        if (receivedPacket.getHeader().getFlagByte() != 0b00010000) {
+          sendPacket(ServiceHandler.getAckPacket(receivedPacket.getHeader().getAckNr()), clientAddress, clientPort);
+        }
+
+        if (!outOfOrderPackets.containsKey(receivedPacket.getHeader().getAckNr())) {
+          if (receivedPacket.getHeader().getAckNr() == lastFrameReceived + 1) {
+            handlePacket(request);
+            checkOutOfOrderPackets();
+          } else {
+            System.out.println("packet put on hold");
+            outOfOrderPackets.put(receivedPacket.getHeader().getAckNr(), request);
+          }
+        }
+      } else {
+        System.out.println("Invalid packet");
+      }
+    }
+  }
 
   @Override
   public void sendPacket(Packet packet, InetAddress dstAddress, int dstPort) throws IOException {
@@ -44,19 +80,39 @@ public abstract class AbstractHost implements Host {
     if (!packet.getHeader().isFlagSet(FLAG.ACK)) {
       setTimer(datagramPacket, packet.getHeader().getAckNr());
     }
-    //System.out.println("PACKET send with ACK nr: " + packet.getHeader().getAckNr());
+    System.out.println("PACKET send with ACK nr: " + packet.getHeader().getAckNr()+ " and flags " + packet.getHeader().getFlagByte());
 
     socket.send(datagramPacket);
   }
 
   @Override
   public boolean isValidPacket(Packet receivedPacket) {
-    //System.out.println("PACKET received with ACK nr: " + receivedPacket.getHeader().getAckNr());
+    System.out.println("PACKET received with ACK nr: " + receivedPacket.getHeader().getAckNr() + " and flags " + receivedPacket.getHeader().getFlagByte());
 
     boolean correctChecksum = Checksum.verifyChecksum(receivedPacket);
-    boolean inSlidingWindow = true;
-    return correctChecksum && inSlidingWindow;
+    boolean inReceivingWindow = withinWindow(receivedPacket.getHeader().getAckNr());
+    return correctChecksum && inReceivingWindow;
   }
+
+  private boolean withinWindow(int receivedAck) {
+    if (largestAcceptableFrame < lastFrameReceived){
+      return 0 <= receivedAck && receivedAck <= largestAcceptableFrame || lastFrameReceived <= receivedAck && receivedAck <= 255;
+    }else{
+      return lastFrameReceived <= receivedAck && receivedAck <= largestAcceptableFrame;
+    }
+  }
+
+  void checkOutOfOrderPackets() throws IOException {
+    if (outOfOrderPackets.containsKey(lastFrameReceived + 1)) {
+      handlePacket(outOfOrderPackets.get(lastFrameReceived + 1));
+      checkOutOfOrderPackets();
+    }
+  }
+
+  void handlePacket(DatagramPacket datagramPacket) throws IOException {}
+
+
+
 
   public synchronized void setTimer(DatagramPacket datagramPacket, int ackNr) {
     Timer timer = new Timer();
@@ -67,6 +123,7 @@ public abstract class AbstractHost implements Host {
       public void run() {
         try {
           if (retries < MAX_RETRIES) {
+            System.out.println("TIMER RUN OUT");
             socket.send(datagramPacket);
             retries++;
           } else {

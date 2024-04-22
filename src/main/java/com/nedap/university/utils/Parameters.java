@@ -8,7 +8,7 @@ public class Parameters {
   public static final int MAX_PAYLOAD_SIZE = MAX_PACKET_SIZE - HEADER_SIZE;
 
   // TimeOut
-  public static final int TIMEOUT_DURATION = 100;
+  public static final int TIMEOUT_DURATION = 100000;
   public static final int MAX_RETRIES = 3;
 
   // Test file Paths

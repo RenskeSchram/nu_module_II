@@ -33,8 +33,8 @@ public class FileBuffer {
   }
 
   public void initFileBuffer(Payload payload) {
+    System.out.println("BUFFER initiated");
     String[] stringArray = payload.getStringArray();
-    System.out.println(Arrays.toString(stringArray));
     if (stringArray != null & !isInitialized) {
       this.dst_path = stringArray[1];
       this.fileSize = Integer.parseInt(stringArray[2]);
@@ -52,7 +52,8 @@ public class FileBuffer {
   }
 
   public void receivePacket(Payload payload) {
-    int offsetPointer = payload.getOffsetPointer();if (expectedOffsetPointer == offsetPointer) {
+    int offsetPointer = payload.getOffsetPointer();
+    if (expectedOffsetPointer == offsetPointer) {
       writePacketsToBuffer(payload.getByteArray(), offsetPointer);
       checkSavedPackets();
     } else {

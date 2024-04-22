@@ -44,7 +44,6 @@ public class FileLoaderTest {
     assertTrue(header.isFlagSet(FLAG.HELLO));
     header = packetList.get(packetList.size() -1).getHeader();
     assertTrue(header.isFlagSet(FLAG.FIN));
-    
 
     // PAYLOAD
     int totalPayloadSize = 0;
