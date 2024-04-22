@@ -12,11 +12,8 @@ public class ClientTUI {
   Client client;
   String CLIENT_HOME = "example_files/";
   String SERVER_HOME =  "home/pi/PiServer/";
-  int PORT = 8080;
 
-  ClientTUI() throws SocketException {
-    client = new Client(PORT);
-  }
+  ClientTUI() {}
 
   public void runTUI() throws IOException, InterruptedException {
     Scanner scanner = new Scanner(System.in);
@@ -25,10 +22,9 @@ public class ClientTUI {
     InetAddress hostname = null;
     boolean validHostname = false;
     while (!validHostname) {
-      //System.out.print("PI_hostname:     \n");
+      System.out.print("PI Server IP address:     \n");
       try {
-        //hostname = InetAddress.getByName(scanner.nextLine());
-        hostname = InetAddress.getByName("172.16.1.1");
+        hostname = InetAddress.getByName(scanner.nextLine());
         validHostname = true;
       } catch (UnknownHostException e) {
         System.err.println("Invalid hostname. Please enter a valid hostname.");
@@ -39,16 +35,20 @@ public class ClientTUI {
     int port = -1;
     boolean validPort = false;
     while (!validPort) {
-      //System.out.print("port:       \n");
+      System.out.print("PI Server port:       \n");
       try {
-        //port = scanner.nextInt();
-        port = 8080;
+        port = scanner.nextInt();
+        //port = 8080;
         validPort = true;
       } catch (InputMismatchException e) {
         System.err.println("Invalid port. Please enter a valid port.");
         scanner.nextLine();
       }
     }
+
+    client = new Client(hostname, port);
+
+
 //
 //    try {
 //      DatagramSocket socket = new DatagramSocket();
@@ -116,9 +116,6 @@ public class ClientTUI {
             System.out.println("Invalid input length, try again.");
           }
           break;
-        default:
-          System.out.println("Invalid input, try again.");
-          System.out.println(this);
 
       }
   }

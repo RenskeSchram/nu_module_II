@@ -23,6 +23,7 @@ public abstract class AbstractHost implements Host {
   protected ServiceHandler serviceHandler;
   protected boolean inService;
   protected HashMap<Integer, Timer> unacknowledgedPackets;
+  protected HashMap<Integer, Packet> outOfOrderPackets;
   private int finalServiceAck;
 
   public AbstractHost(int port) throws SocketException {
@@ -43,12 +44,15 @@ public abstract class AbstractHost implements Host {
     if (!packet.getHeader().isFlagSet(FLAG.ACK)) {
       setTimer(datagramPacket, packet.getHeader().getAckNr());
     }
+    //System.out.println("PACKET send with ACK nr: " + packet.getHeader().getAckNr());
 
     socket.send(datagramPacket);
   }
 
   @Override
   public boolean isValidPacket(Packet receivedPacket) {
+    //System.out.println("PACKET received with ACK nr: " + receivedPacket.getHeader().getAckNr());
+
     boolean correctChecksum = Checksum.verifyChecksum(receivedPacket);
     boolean inSlidingWindow = true;
     return correctChecksum && inSlidingWindow;

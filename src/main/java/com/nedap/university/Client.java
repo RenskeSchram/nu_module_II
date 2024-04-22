@@ -11,14 +11,16 @@ import java.net.SocketException;
 import java.util.List;
 
 public class Client extends AbstractHost{
-  private static String dstInetAdress = "172.16.1.1";
-  private static int dstPort = 8080;
+  private static InetAddress dstInetAdress;
+  private static int dstPort;
   private boolean inService;
 
   private int finalServiceAck;
 
-  Client(int port) throws SocketException {
+  Client(InetAddress dstAddress, int port) throws SocketException {
     super(port);
+    this.dstPort = port;
+    this.dstInetAdress = dstAddress;
     finalServiceAck = -1;
   }
 
@@ -35,6 +37,8 @@ public class Client extends AbstractHost{
         cancelTimer(receivedPacket.getHeader().getAckNr());
 
         //TODO: send ACK
+
+        //Check packet order -> save packets for later
 
         //Check if final packet
         if (receivedPacket.getHeader().getAckNr() == finalServiceAck) {
@@ -70,21 +74,21 @@ public class Client extends AbstractHost{
     System.out.println("UPLOAD STARTED");
     Packet startUploadPacket = serviceHandler.startUpload(src_dir, dst_dir);
     setFinalServiceAck(startUploadPacket);
-    sendPacket(startUploadPacket, InetAddress.getByName(dstInetAdress), dstPort);
+    sendPacket(startUploadPacket, dstInetAdress, dstPort);
     service();
   }
 
   public void downloadFile(String src_dir, String dst_dir) throws IOException, InterruptedException {
     System.out.println("DOWNLOAD STARTED");
     Packet startDownloadPacket = serviceHandler.startDownload(src_dir, dst_dir);
-    sendPacket(startDownloadPacket, InetAddress.getByName(dstInetAdress), dstPort);
+    sendPacket(startDownloadPacket, dstInetAdress, dstPort);
     service();
   }
 
   public void getList(String src_dir) throws IOException {
     System.out.println("ASKED FOR FILE LIST " + src_dir);
     Packet getListPacket = serviceHandler.getHelloListPacket(src_dir);
-    sendPacket(getListPacket, InetAddress.getByName(dstInetAdress), dstPort);
+    sendPacket(getListPacket, dstInetAdress, dstPort);
     service();
   }
 

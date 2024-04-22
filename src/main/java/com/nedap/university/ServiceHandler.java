@@ -93,6 +93,14 @@ public class ServiceHandler {
 
     }
 
+    for (Packet packet : packetsToSend) {
+      // set AckNr
+      packet.getHeader().setAckNr(currentAckNr);
+
+      // Ack nr ++
+      currentAckNr++;
+    }
+
     return packetsToSend;
   }
 
@@ -139,8 +147,6 @@ public class ServiceHandler {
     header.setAckNr(currentAckNr);
     return new Packet(header, payload);
   }
-
-
 
   public static Packet getAckPacket(int AckNr) {
     Payload payload = new Payload(new byte[1], 0, false);

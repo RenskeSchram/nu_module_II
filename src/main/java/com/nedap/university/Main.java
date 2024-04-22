@@ -7,12 +7,15 @@ public class Main {
     private static boolean keepAlive = true;
     private static boolean running = false;
 
+    // PORT nr can be adjusted
+    private static String[] PORT = new String[]{ "8080"};
+
     private Main() {}
 
     public static void main(String[] args) {
         running = true;
-        System.out.println("Hello, Nedap University!");
-        Server.main(new String[]{ "8080"});
+        System.out.println("Hello, you've started Renske's Pi Server!");
+        Server.main(PORT);
 
         initShutdownHook();
 
