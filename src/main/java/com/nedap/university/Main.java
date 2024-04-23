@@ -2,6 +2,9 @@ package com.nedap.university;
 
 import com.nedap.university.Server;
 
+/**
+ * Main Class to start and run Server side.
+ */
 public class Main {
 
     private static boolean keepAlive = true;

@@ -10,6 +10,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+/**
+ * Server side implementation of AbstractHost: continuously responds to received Packets according to protocol.
+ */
 public class Server extends AbstractHost {
 
   public Server(int port) throws SocketException {
@@ -54,7 +57,7 @@ public class Server extends AbstractHost {
     lastFrameReceived = receivedPacket.getHeader().getAckNr();
     largestAcceptableFrame = lastFrameReceived + windowSize;
 
-    System.out.println("RECEIVING    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
+    System.out.println("RECEIVINGWINDOW    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
   }
 }
 

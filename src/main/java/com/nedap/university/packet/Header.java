@@ -9,7 +9,7 @@ import com.nedap.university.utils.Parameters;
  *        PayloadDataSize       [0-1]           2
  *        OffsetPointer         [2-3]           2
  *        Ack number            [4-5]           2
- *        Sequence number       [6-7]           2
+ *        Sequence number       [6-7]           2     (currently not in use)
  *        Checksum              [8-9]           2
  *        Flags                 [10]            1
  *        Unassigned            [11]            1
@@ -104,6 +104,10 @@ public class Header {
     return (byteArray[10] & (1 << flag.byteLocation)) != 0;
   }
 
+  /**
+   * Use payload to fill butes of the header with the payloadsize, offsetpointer and FIN flag.
+   * @param payload payload of the packet.
+   */
   public void setWithPayload(Payload payload) {
     setPayloadDataSize(payload.getByteArray().length);
     setOffsetPointer(payload.getOffsetPointer());

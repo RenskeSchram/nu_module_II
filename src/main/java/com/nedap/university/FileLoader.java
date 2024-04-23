@@ -16,11 +16,22 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * FileLoader Class to extract data for Payload in Packets from a File.
+ */
 public class FileLoader {
   private Path src_path;
   private int offsetPointer;
   private boolean initiated;
   int finalOffsetPointer;
+
+  /**
+   * Initiate loading of a File using the source and destination paths of the file.
+   * @param src_path source path of file
+   * @param dst_path destination path of file
+   * @return HELLO DATA Packet to inform the other Host about upcoming DATA Packets.
+   * @throws IOException  if an I/O error occurs.
+   */
   public Packet initFileLoading(String src_path, String dst_path) throws IOException {
     this.initiated = true;
     this.src_path = Paths.get(src_path);
@@ -29,6 +40,10 @@ public class FileLoader {
     return PacketBuilder.getInitLoaderPacket(src_path, dst_path, Files.size(this.src_path));
   }
 
+  /**
+   * Extract next Packet with piece of data from the file.
+   * @return Packet with piece of data from the file.
+   */
   public Packet extractNextPacket() {
     if (initiated) {
       try (FileChannel fileChannel = FileChannel.open(src_path, StandardOpenOption.READ)) {
@@ -87,7 +102,6 @@ public class FileLoader {
     fileLoader.extractPackets(Paths.get("example_files/tiny.pdf"));
   }
 
-
   /**
    * Extract PacketList from File.
    *
@@ -124,33 +138,4 @@ public class FileLoader {
 
     return packetList;
   }
-
-  public Packet extractPacket(Path file_path, int offsetPointer) throws IOException {
-    try (FileChannel fileChannel = FileChannel.open(file_path, StandardOpenOption.READ)) {
-      long fileLength = fileChannel.size();
-
-      int remainingBytes = (int) Math.min(fileLength - offsetPointer * Parameters.MAX_PAYLOAD_SIZE, Parameters.MAX_PAYLOAD_SIZE);
-
-      ByteBuffer buffer = ByteBuffer.allocate(remainingBytes);
-      fileChannel.read(buffer);
-      buffer.flip();
-
-      byte[] payloadByteArray = new byte[remainingBytes];
-      buffer.get(payloadByteArray);
-
-      boolean isFinalPacket = (offsetPointer + 1) * Parameters.MAX_PAYLOAD_SIZE >= fileLength;
-
-      if (isFinalPacket) {
-        reset();
-      }
-
-      Payload payload = new Payload(payloadByteArray, offsetPointer, isFinalPacket);
-      Header header = new Header(payload);
-      header.setFlag(FLAG.DATA);
-      return new Packet(header, payload);
-    }
-  }
-
-
-
 }

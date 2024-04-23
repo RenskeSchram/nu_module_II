@@ -7,21 +7,31 @@ import com.nedap.university.utils.Checksum;
 import com.nedap.university.utils.Parameters;
 import java.nio.ByteBuffer;
 
+/**
+ * Packet object used troughout the differnt layers for processing, has a header and payload.
+ */
+
 public class Packet {
 
   private final Header header;
   private final Payload payload;
   private final int size;
 
+  /**
+   * Constructor for a Packet from a Header and Payload.
+   * @param header header of the packet
+   * @param payload payload of the packet
+   */
   public Packet(Header header, Payload payload) {
     this.header = header;
     this.payload = payload;
     this.size = Parameters.HEADER_SIZE + payload.getSize();
-
-    // set Checksum based on full packet
-    header.setChecksum(Checksum.calculateChecksum(this));
   }
 
+  /**
+   * Constructor for a Packet from a (received) byte array according to the set protocol.
+   * @param byteArray input array to construct Packet from.
+   */
   public Packet(byte[] byteArray) {
     header = new Header();
     byte[] headerByteArray = new byte[HEADER_SIZE];

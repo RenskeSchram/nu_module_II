@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Layer which handles the ordered and accepted Packets.
+ */
 public class ServiceHandler {
   FileBuffer fileBuffer;
   FileLoader fileLoader;
@@ -24,6 +27,12 @@ public class ServiceHandler {
     fileLoader = new FileLoader();
   }
 
+  /**
+   * Base action of Packet on the Flags.
+   * @param receivedPacket received Packet to handle.
+   * @return List of possible to be sent Packets.
+   * @throws IOException is I/O error occurs.
+   */
   public List<Packet> handlePacket(Packet receivedPacket) throws IOException {
     List<Packet> packetsToSend = new ArrayList<>();
     Header header = receivedPacket.getHeader();
@@ -81,8 +90,8 @@ public class ServiceHandler {
     for (Packet packet : packetsToSend) {
       lastFrameSent = packet.getHeader().getAckNr();
     }
-
-    //System.out.println("SENDING       LAR: " + lastAckReceived + ", LSF: " + lastFrameSent + " and LFIW: " + lastFrameInWindow);
+    lastFrameInWindow = lastAckReceived + windowSize;
+    //System.out.println("SENDINGWINDOW       LAR: " + lastAckReceived + ", LSF: " + lastFrameSent + " and LFIW: " + lastFrameInWindow);
     return packetsToSend;
   }
 
@@ -102,7 +111,6 @@ public class ServiceHandler {
 
   private void printListPacket(Payload payload) {
     String[] fileNames = payload.getStringArray();
-    //System.out.println("The following files and folders are in the requested directory on the PiServer:");
     for (String fileName : fileNames) {
       System.out.println("  " + fileName);
     }

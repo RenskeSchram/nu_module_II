@@ -1,11 +1,20 @@
 package com.nedap.university.packet;
 
+/**
+ * Payload class, contains the payload of the Packet and the offset-pointer of the data within the payload, as well as whether this is the final payload of the stack.
+ */
 public class Payload {
   private byte[] byteArray;
   private final int offsetPointer;
   public final boolean isFinalPacket;
 
-  // Create HELLO or GET payload
+  /**
+   * Constructor for Payload using a source and destination directory, filesize and boolean for final packet for messages to notify the other host for upcoming packets/actions.
+   * @param src_dir source directory of file
+   * @param dst_dir destination directory of file
+   * @param fileSize file size in bytes
+   * @param isFinalPacket boolean if this is the final packet
+   */
   public Payload(String src_dir, String dst_dir, long fileSize, boolean isFinalPacket) {
     byte[] fileSrcBytes = src_dir.getBytes();
     byte[] fileDstBytes = dst_dir.getBytes();
@@ -23,7 +32,12 @@ public class Payload {
     this.isFinalPacket = isFinalPacket;
   }
 
-  // Create payload from received byteArray
+  /**
+   * Constructor for Payload using a byte array, offset-pointer and boolean for final packet to extract payload from received byte array.
+   * @param byteArray byte array to construct Payload from
+   * @param offsetPointer offset-pointer of data in the payload
+   * @param isFinalPacket boolean if this is the final packet
+   */
   public Payload(byte[] byteArray, int offsetPointer, boolean isFinalPacket) {
     this.byteArray = byteArray;
     this.offsetPointer = offsetPointer;
@@ -42,6 +56,10 @@ public class Payload {
     return byteArray.length;
   }
 
+  /**
+   * Spit String Payload using the tilde ~.
+   * @return array of different Strings in the payload
+   */
   public String[] getStringArray() {
     return new String(byteArray).split("~");
   }

@@ -16,6 +16,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Class to store incoming payloads with data and write to File.
+ */
 public class FileBuffer {
   private ByteBuffer byteBuffer;
   private Map<Integer, byte[]> savedPackets;
@@ -32,6 +35,10 @@ public class FileBuffer {
     savedPackets = new HashMap<>();
   }
 
+  /**
+   * Initiate Class using the retrieved payload with incoming File information.
+   * @param payload retrieved payload with incoming File information.
+   */
   public void initFileBuffer(Payload payload) {
     System.out.println("BUFFER initiated");
     String[] stringArray = payload.getStringArray();
@@ -43,6 +50,10 @@ public class FileBuffer {
     }
   }
 
+  /**
+   * Handle a received DATA Packet. If next in order -> write to Buffer, otherwise -> store until next in order.
+   * @param payload payload with data.
+   */
   public void receivePacket(Payload payload) {
     int offsetPointer = payload.getOffsetPointer();
     if (expectedOffsetPointer == offsetPointer) {
@@ -53,6 +64,11 @@ public class FileBuffer {
     }
   }
 
+  /**
+   * Write Packet data to the buffer.
+   * @param payload payload with data.
+   * @param offsetPointer offset pointer with location of data in the buffer.
+   */
   private void writePacketsToBuffer(byte[] payload, int offsetPointer) {
     byteBuffer.position(offsetPointer* Parameters.MAX_PAYLOAD_SIZE);
     try {
@@ -78,6 +94,9 @@ public class FileBuffer {
     expectedOffsetPointer++;
   }
 
+  /**
+   * Reset Buffer.
+   */
   void resetBuffer() {
     byteBuffer = null;
     savedPackets = new HashMap<>();
@@ -91,6 +110,9 @@ public class FileBuffer {
     isInitialized = false;
   }
 
+  /**
+   * Check if one of the saved Packets is next in order to write to the Buffer.
+   */
   private void checkSavedPackets() {
     if (savedPackets.containsKey(expectedOffsetPointer)) {
       writePacketsToBuffer(savedPackets.get(expectedOffsetPointer), expectedOffsetPointer);
@@ -99,11 +121,18 @@ public class FileBuffer {
     }
   }
 
+  /**
+   * Add Packet to the saved out of order Packets.
+   * @param payload payload with data.
+   * @param offsetPointer offset-pointer for location of data in final buffer
+   */
   private void addPacketToSavedPackets(byte[] payload, int offsetPointer) {
     savedPackets.put(offsetPointer, payload);
   }
 
-
+  /**
+   * Write Buffer to File.
+   */
   void writeBufferToFile() {
     try {
       Path path = Paths.get(dst_path);
