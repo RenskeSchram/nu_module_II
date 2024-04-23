@@ -150,9 +150,8 @@ public abstract class AbstractHost implements Host {
       public void run() {
         try {
           if (retries < MAX_RETRIES) {
-            System.out.println("TIMER RUN OUT for packet with ack: " + ackNr);
+            System.out.println("TIMER RUN OUT for packet with ack: " + ackNr + " resending packet to " + datagramPacket.getAddress() + " " + datagramPacket.getPort());
             socket.send(datagramPacket);
-            System.out.println("resending packet to " + datagramPacket.getAddress() + " " + datagramPacket.getPort());
             retries++;
           } else {
             System.out.println("MAX RETRIES EXCEEDED for packet with ACK number: " + ackNr);

@@ -37,13 +37,6 @@ public class Client extends AbstractHost{
       finalReceivingAck = -1;
       updateLastFrameReceived(receivedAck);
       System.out.println("UPLOAD FINISHED in "  + (endTime - startTime)/1000 + " seconds \n");
-      if (unacknowledgedPackets.size() > 1) {
-        System.out.println(unacknowledgedPackets.size() + " unacked packets with nrs: ");
-        for (int ack : unacknowledgedPackets.keySet()) {
-          System.out.print(ack);
-        }
-        System.out.println();
-      }
       inService = false;
       return;
     }
@@ -53,14 +46,6 @@ public class Client extends AbstractHost{
       finalReceivingAck = -1;
       updateLastFrameReceived(receivedAck);
       System.out.println("DOWNLOAD FINISHED in " + (endTime - startTime)/1000 + " seconds \n");
-      if (unacknowledgedPackets.size() > 1) {
-        System.out.println(unacknowledgedPackets.size() + " unacked packets with nrs: ");
-        for (int ack : unacknowledgedPackets.keySet()) {
-          System.out.print(ack);
-        }
-        System.out.println();
-      }
-
       inService = false;
       return;
     }
