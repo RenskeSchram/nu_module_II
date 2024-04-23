@@ -14,4 +14,5 @@ public class Parameters {
   // Test file Paths
   public static final String TEST_SRC_FILE_PATH = "example_files/medium.pdf";
   public static final String TEST_DST_FILE_PATH = "example_files/test_file.pdf";
+
 }

@@ -1,19 +1,17 @@
 package com.nedap.university;
 
 import com.nedap.university.packet.Header.FLAG;
-import com.nedap.university.packet.PacketBuilder;
+import com.nedap.university.utils.PacketBuilder;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Packet;
-import com.nedap.university.packet.Payload;
 
 import java.util.List;
 

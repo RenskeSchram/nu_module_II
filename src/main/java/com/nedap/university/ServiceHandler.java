@@ -2,7 +2,7 @@ package com.nedap.university;
 
 import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Packet;
-import com.nedap.university.packet.PacketBuilder;
+import com.nedap.university.utils.PacketBuilder;
 import com.nedap.university.packet.Payload;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -102,10 +102,11 @@ public class ServiceHandler {
 
   private void printListPacket(Payload payload) {
     String[] fileNames = payload.getStringArray();
-    System.out.println("The following files are in the requested folder on the PiServer:");
+    //System.out.println("The following files and folders are in the requested directory on the PiServer:");
     for (String fileName : fileNames) {
-      System.out.println("   - " + fileName);
+      System.out.println("  " + fileName);
     }
+    System.out.println();
   }
 
   private Packet getListPacket(Payload payload) {

@@ -1,10 +1,14 @@
-package com.nedap.university.packet;
+package com.nedap.university.utils;
 
+import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Header.FLAG;
+import com.nedap.university.packet.Packet;
+import com.nedap.university.packet.Payload;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,10 +23,13 @@ public class PacketBuilder {
   }
 
   public static Packet listPacket(Payload payload) {
-    List<String> fileNames = null;
+    List<String> fileNames = new ArrayList<>();
 
-    try (var directoryStream = Files.list(Paths.get(payload.getSrcPath()))) {
-      fileNames = directoryStream.map(Path::getFileName).map(Path::toString).collect(Collectors.toList());
+    try {
+      fileNames = Files.walk(Paths.get(payload.getSrcPath()), 1)
+          .filter(path -> !path.equals(Paths.get(payload.getSrcPath())))
+          .map(path -> Files.isDirectory(path) ? "[" + path.getFileName() + "]" : path.getFileName().toString())
+          .collect(Collectors.toList());
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -66,5 +73,4 @@ public class PacketBuilder {
 
     return new Packet(header, payload);
   }
-
 }

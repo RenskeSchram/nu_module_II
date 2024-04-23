@@ -14,9 +14,7 @@ public class Client extends AbstractHost{
   private int dstPort;
 
   private int finalReceivingAck;
-
   private long startTime;
-  private long endTime;
 
   Client(InetAddress dstAddress, int port) throws SocketException {
     super(port);
@@ -29,13 +27,11 @@ public class Client extends AbstractHost{
     Packet receivedPacket = new Packet(datagramPacket.getData());
     int receivedAck = receivedPacket.getHeader().getAckNr();
 
-    //Check if final packet
+    long endTime = System.currentTimeMillis();
     if (receivedAck == finalReceivingAck) {
       finalReceivingAck = -1;
       updateLastFrameReceived(receivedAck);
-      //System.out.println("RECEIVING    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
-      endTime = System.currentTimeMillis();
-      System.out.println("UPLOAD FINISHED in " + (endTime - startTime) + " milliseconds");
+      System.out.println("UPLOAD FINISHED in "  + (endTime - startTime)/1000 + " seconds \n");
       inService = false;
       return;
     }
@@ -44,8 +40,7 @@ public class Client extends AbstractHost{
       serviceHandler.handlePacket(receivedPacket);
       finalReceivingAck = -1;
       updateLastFrameReceived(receivedAck);
-      endTime = System.currentTimeMillis();
-      System.out.println("DOWNLOAD FINISHED in " + (endTime - startTime) + " milliseconds");
+      System.out.println("DOWNLOAD FINISHED in " + (endTime - startTime)/1000 + " seconds \n");
       inService = false;
       return;
     }
@@ -83,7 +78,9 @@ public class Client extends AbstractHost{
   }
 
   public void getList(String src_dir) throws IOException {
-    System.out.println("ASKED FOR FILE LIST " + src_dir);
+    System.out.println("FILE & DIRECTORY LIST of " + src_dir);
+    startTime = System.currentTimeMillis();
+
     Packet getListPacket = serviceHandler.getHelloListPacket(src_dir);
     sendPacket(getListPacket, dstInetAdress, dstPort);
     service();

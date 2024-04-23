@@ -2,7 +2,7 @@ package com.nedap.university;
 
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
-import com.nedap.university.packet.PacketBuilder;
+import com.nedap.university.utils.PacketBuilder;
 import com.nedap.university.packet.Payload;
 import java.util.Collections;
 import java.util.List;

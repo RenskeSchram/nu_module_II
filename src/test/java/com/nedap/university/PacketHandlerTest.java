@@ -2,7 +2,7 @@ package com.nedap.university;
 
 
 import com.nedap.university.packet.Packet;
-import com.nedap.university.packet.PacketBuilder;
+import com.nedap.university.utils.PacketBuilder;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;

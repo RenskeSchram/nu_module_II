@@ -5,7 +5,8 @@ import static com.nedap.university.utils.Parameters.TIMEOUT_DURATION;
 
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
-import com.nedap.university.packet.PacketBuilder;
+import com.nedap.university.utils.LoggingHandler;
+import com.nedap.university.utils.PacketBuilder;
 import com.nedap.university.utils.Checksum;
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;
@@ -14,9 +15,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public abstract class AbstractHost implements Host {
 
@@ -88,8 +91,8 @@ public abstract class AbstractHost implements Host {
   }
 
   @Override
-  public boolean isValidPacket(Packet receivedPacket) {
-    //System.out.println("PACKET received with ACK nr: " + receivedPacket.getHeader().getAckNr() + " and flags " + receivedPacket.getHeader().getFlagByte());
+  public boolean isValidPacket(Packet receivedPacket) throws IOException {
+    LoggingHandler.log("PACKET received with ACK nr: " + receivedPacket.getHeader().getAckNr() + " and flags " + receivedPacket.getHeader().getFlagByte());
 
     boolean correctChecksum = Checksum.verifyChecksum(receivedPacket);
     boolean inReceivingWindow = withinWindow(receivedPacket.getHeader().getAckNr());
@@ -104,10 +107,10 @@ public abstract class AbstractHost implements Host {
     }
   }
 
-  void updateLastFrameReceived(int AckNr) {
+  void updateLastFrameReceived(int AckNr) throws IOException {
     lastFrameReceived = AckNr;
     largestAcceptableFrame = lastFrameReceived + windowSize;
-    //System.out.println("RECEIVING    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
+    LoggingHandler.log("RECEIVING    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
   }
 
   void checkOutOfOrderPackets() throws IOException {
@@ -117,7 +120,7 @@ public abstract class AbstractHost implements Host {
     }
   }
 
-  void handlePacket(DatagramPacket datagramPacket) throws IOException {}
+  abstract void handlePacket(DatagramPacket datagramPacket) throws IOException;
 
   public synchronized void setTimer(DatagramPacket datagramPacket, int ackNr) {
     Timer timer = new Timer();
@@ -152,4 +155,5 @@ public abstract class AbstractHost implements Host {
       unacknowledgedPackets.remove(ackNr);
     }
   }
+
 }

@@ -107,6 +107,8 @@ public class FileBuffer {
   void writeBufferToFile() {
     try {
       Path path = Paths.get(dst_path);
+      Files.createDirectories(path.getParent());
+
       try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
         byteBuffer.rewind();
         while (byteBuffer.hasRemaining()) {

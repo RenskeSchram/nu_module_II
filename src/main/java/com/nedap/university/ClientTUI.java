@@ -6,19 +6,24 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.SimpleFormatter;
 
+/**
+ *  CLient TUI application to run the Client side of the connection.
+ */
 public class ClientTUI {
   boolean runTui = true;
   Client client;
   String CLIENT_HOME = "example_files/";
   String SERVER_HOME =  "home/pi/PiServer/";
 
-  ClientTUI() {}
-
   public void runTUI() throws IOException, InterruptedException {
     Scanner scanner = new Scanner(System.in);
 
-    // retrieve host name
+    // retrieve host ip
     InetAddress hostname = null;
     boolean validHostname = false;
     while (!validHostname) {
@@ -38,7 +43,6 @@ public class ClientTUI {
       System.out.print("PI Server port:       \n");
       try {
         port = scanner.nextInt();
-        //port = 8080;
         if (port > 999 && port < 65535) {
           validPort = true;
         }
@@ -49,29 +53,7 @@ public class ClientTUI {
     }
 
     client = new Client(hostname, port);
-
-
-//
-//    try {
-//      DatagramSocket socket = new DatagramSocket();
-//      DatagramPacket request = new DatagramPacket(new byte[1], 1, hostname, port);
-//      socket.send(request);
-//      System.out.println("request is send");
-//
-//      byte[] buffer = new byte[512];
-//      DatagramPacket response = new DatagramPacket(buffer, buffer.length);
-//      socket.receive(response);
-//
-//      System.out.println("PI Server is ACTIVE");
-//
-//    } catch (SocketTimeoutException ex) {
-//      System.out.println("Timeout error: " + ex.getMessage());
-//      ex.printStackTrace();
-//    } catch (IOException ex) {
-//      System.out.println("Client error: " + ex.getMessage());
-//      ex.printStackTrace();
-//    }
-    System.out.println(this);
+    System.out.println("\n" + this);
 
     while (runTui) {
       String systemTuiInput = scanner.nextLine();
@@ -89,6 +71,7 @@ public class ClientTUI {
   public static void main(String[] args) throws IOException, InterruptedException {
     ClientTUI clientTUI = new ClientTUI();
     clientTUI.runTUI();
+
   }
 
   private void handleClientInput(String systemTuiInput) throws InterruptedException, IOException {
@@ -126,10 +109,10 @@ public class ClientTUI {
   public String toString() {
     return
         "Client TUI commands:\n" +
-            "   SEND <src_dir> <dst_dir>.... send file \n" +
-            "   GET  <src_dir> <dst_dir>.... get file \n" +
-            "   LIST <src_dir> ............. get filenames stored directory \n" +
-            "   DISCONNECT ................. disconnect and stop \n" +
-            "   HELP ....................... help (this menu) \n";
+            "   send <src_dir> <dst_dir>.... send file \n" +
+            "   get  <src_dir> <dst_dir>.... get file \n" +
+            "   list <src_dir> ............. get filenames stored directory \n" +
+            "   disconnect ................. disconnect and stop \n" +
+            "   help ....................... help (this menu) \n";
   }
 }

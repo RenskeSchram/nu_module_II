@@ -1,12 +1,9 @@
 package com.nedap.university;
 
-import static com.nedap.university.utils.Parameters.HEADER_SIZE;
-import static com.nedap.university.utils.Parameters.MAX_PAYLOAD_SIZE;
-
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Header;
-import com.nedap.university.packet.PacketBuilder;
+import com.nedap.university.utils.PacketBuilder;
 import com.nedap.university.packet.Payload;
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;

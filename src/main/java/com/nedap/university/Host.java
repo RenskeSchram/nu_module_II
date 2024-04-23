@@ -11,6 +11,6 @@ public interface Host {
 
   default void sendPacket(Packet packet, InetAddress dstAddress, int dstPort) throws IOException {}
 
-  boolean isValidPacket(Packet receivedPacket);
+  boolean isValidPacket(Packet receivedPacket) throws IOException;
 
 }
