@@ -38,9 +38,11 @@ public class PacketBuilder {
   public static Packet listPacket(Payload payload) {
     List<String> fileNames = new ArrayList<>();
 
+    String src_dir = payload.getSrcPath().split("\\.")[0];
+
     try {
-      fileNames = Files.walk(Paths.get(payload.getSrcPath()), 1)
-          .filter(path -> !path.equals(Paths.get(payload.getSrcPath())))
+      fileNames = Files.walk(Paths.get(src_dir), 1)
+          .filter(path -> !path.equals(Paths.get(src_dir)))
           .map(path -> Files.isDirectory(path) ? "[" + path.getFileName() + "]" : path.getFileName().toString())
           .collect(Collectors.toList());
     } catch (IOException e) {
