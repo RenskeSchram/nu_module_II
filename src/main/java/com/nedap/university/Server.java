@@ -33,9 +33,9 @@ public class Server extends AbstractHost {
         Server server = new Server(port);
         server.service();
       } catch (SocketException ex) {
-        System.out.println("Socket error: " + ex.getMessage());
+        System.err.println("Socket error: " + ex.getMessage());
       } catch (IOException ex) {
-        System.out.println("I/O error: " + ex.getMessage());
+        System.err.println("I/O error: " + ex.getMessage());
       }
     }
   }
@@ -57,7 +57,7 @@ public class Server extends AbstractHost {
     lastFrameReceived = receivedPacket.getHeader().getAckNr();
     largestAcceptableFrame = lastFrameReceived + windowSize;
 
-    System.out.println("RECEIVINGWINDOW    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
+    //System.out.println("RECEIVINGWINDOW    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
   }
 }
 

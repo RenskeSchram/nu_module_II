@@ -35,7 +35,7 @@ public class Header {
     if (this.byteArray.length == byteArray.length) {
       this.byteArray = byteArray;
     } else {
-      System.out.println("Invalid provided Header byte-array.");
+      System.err.println("Invalid provided Header byte-array.");
     }
   }
 

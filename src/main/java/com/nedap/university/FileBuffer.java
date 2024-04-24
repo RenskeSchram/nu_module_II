@@ -40,7 +40,7 @@ public class FileBuffer {
    * @param payload retrieved payload with incoming File information.
    */
   public void initFileBuffer(Payload payload) {
-    System.out.println("BUFFER initiated");
+    //System.out.println("BUFFER initiated");
     String[] stringArray = payload.getStringArray();
     if (stringArray != null & !isInitialized) {
       this.dst_path = stringArray[1];
@@ -74,10 +74,10 @@ public class FileBuffer {
     try {
       byteBuffer.put(payload);
     } catch (Exception e ) {
-      System.out.println("Could not add file");
-      System.out.println("Current position: " + byteBuffer.position());
-      System.out.println("Current capacity: " + byteBuffer.capacity());
-      System.out.println("Payload length: " + payload.length);
+      System.err.println("Could not add file");
+      System.err.println("Current position: " + byteBuffer.position());
+      System.err.println("Current capacity: " + byteBuffer.capacity());
+      System.err.println("Payload length: " + payload.length);
     }
 
     for (int offset : savedPackets.keySet()) {

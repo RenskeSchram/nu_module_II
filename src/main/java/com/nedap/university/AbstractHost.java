@@ -79,12 +79,9 @@ public abstract class AbstractHost implements Host {
             handlePacket(request);
             checkOutOfOrderPackets();
           } else {
-            System.out.println("packet put on hold with ack:" + receivedAck);
             outOfOrderPackets.put(receivedAck, request);
           }
         }
-      } else {
-        System.out.println("Invalid packet");
       }
     }
   }
@@ -97,22 +94,22 @@ public abstract class AbstractHost implements Host {
     if (!packet.getHeader().isFlagSet(FLAG.ACK)) {
       setTimer(datagramPacket, packet.getHeader().getAckNr());
     }
-    System.out.println("PACKET send with ACK nr: " + packet.getHeader().getAckNr()+ " and flags " + packet.getHeader().getFlagByte());
+    //System.out.println("PACKET send with ACK nr: " + packet.getHeader().getAckNr()+ " and flags " + packet.getHeader().getFlagByte());
 
     socket.send(datagramPacket);
   }
 
   @Override
   public boolean isValidPacket(Packet receivedPacket) throws IOException {
-    System.out.println("PACKET received with ACK nr: " + receivedPacket.getHeader().getAckNr() + " and flags " + receivedPacket.getHeader().getFlagByte());
+    //System.out.println("PACKET received with ACK nr: " + receivedPacket.getHeader().getAckNr() + " and flags " + receivedPacket.getHeader().getFlagByte());
 
     boolean correctChecksum = Checksum.verifyChecksum(receivedPacket);
     if (!correctChecksum) {
-      System.out.println("false checksum");
+      System.err.println("incorrect Checksum");
     }
     boolean inReceivingWindow = withinWindow(receivedPacket.getHeader().getAckNr());
     if (!inReceivingWindow) {
-      System.out.println("false inReceivingWindow");
+      System.err.println("not in ReceivingWindow");
     }
     return correctChecksum && inReceivingWindow;
   }
@@ -121,7 +118,7 @@ public abstract class AbstractHost implements Host {
       return lastFrameReceived <= receivedAck && receivedAck <= largestAcceptableFrame;
   }
 
-  void updateLastFrameReceived(int AckNr) throws IOException {
+  void updateLastFrameReceived(int AckNr) {
     lastFrameReceived = AckNr;
     largestAcceptableFrame = lastFrameReceived + windowSize;
     //System.out.println("RECEIVINGWINDOW    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
@@ -144,17 +141,17 @@ public abstract class AbstractHost implements Host {
   public synchronized void setTimer(DatagramPacket datagramPacket, int ackNr) {
     Timer timer = new Timer();
     TimerTask task = new TimerTask() {
-      private int retries = 0;
+      private int retries = 1;
 
       @Override
       public void run() {
         try {
           if (retries < MAX_RETRIES) {
-            System.out.println("TIMER RUN OUT for packet with ack: " + ackNr + " resending packet to " + datagramPacket.getAddress() + " " + datagramPacket.getPort());
+            System.err.println("TIMER RUN OUT (" + ackNr + "), retry " + retries);
             socket.send(datagramPacket);
             retries++;
           } else {
-            System.out.println("MAX RETRIES EXCEEDED for packet with ACK number: " + ackNr);
+            System.err.println("MAX RETRIES EXCEEDED (" + ackNr+ ")");
             cancelTimer(ackNr);
           }
         } catch (IOException e) {

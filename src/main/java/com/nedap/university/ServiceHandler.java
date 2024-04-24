@@ -16,10 +16,9 @@ public class ServiceHandler {
   FileLoader fileLoader;
 
   // Sending Window
-  int windowSize = 1;
-  int lastAckReceived = -1;
-  int lastFrameInWindow = 0;
-
+  private final int windowSize = 1;
+  private int lastAckReceived = -1;
+  private int lastFrameInWindow = 0;
   private int lastFrameSent = -1;
 
   public ServiceHandler(){
@@ -90,7 +89,7 @@ public class ServiceHandler {
     for (Packet packet : packetsToSend) {
       lastFrameSent = packet.getHeader().getAckNr();
     }
-    lastFrameInWindow = lastAckReceived + windowSize;
+    //lastFrameInWindow = lastAckReceived + windowSize;
     //System.out.println("SENDINGWINDOW       LAR: " + lastAckReceived + ", LSF: " + lastFrameSent + " and LFIW: " + lastFrameInWindow);
     return packetsToSend;
   }
