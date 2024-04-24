@@ -1,8 +1,5 @@
 package com.nedap.university.networkhost.handlers;
 
-import com.nedap.university.packet.Header;
-import com.nedap.university.packet.Header.FLAG;
-import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Payload;
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;
@@ -12,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +16,7 @@ import java.util.Map;
  * Class to store incoming payloads with data and write to File.
  */
 public class FileBuffer {
+
   private ByteBuffer byteBuffer;
   private Map<Integer, byte[]> savedPackets;
 
@@ -37,6 +34,7 @@ public class FileBuffer {
 
   /**
    * Initiate Class using the retrieved payload with incoming File information.
+   *
    * @param payload retrieved payload with incoming File information.
    */
   public void initFileBuffer(Payload payload) {
@@ -51,7 +49,9 @@ public class FileBuffer {
   }
 
   /**
-   * Handle a received DATA Packet. If next in order -> write to Buffer, otherwise -> store until next in order.
+   * Handle a received DATA Packet. If next in order -> write to Buffer, otherwise -> store until
+   * next in order.
+   *
    * @param payload payload with data.
    */
   public void receivePacket(Payload payload) {
@@ -66,14 +66,15 @@ public class FileBuffer {
 
   /**
    * Write Packet data to the buffer.
-   * @param payload payload with data.
+   *
+   * @param payload       payload with data.
    * @param offsetPointer offset pointer with location of data in the buffer.
    */
   private void writePacketsToBuffer(byte[] payload, int offsetPointer) {
-    byteBuffer.position(offsetPointer* Parameters.MAX_PAYLOAD_SIZE);
+    byteBuffer.position(offsetPointer * Parameters.MAX_PAYLOAD_SIZE);
     try {
       byteBuffer.put(payload);
-    } catch (Exception e ) {
+    } catch (RuntimeException e) {
       System.err.println("Could not add file");
       System.err.println("Current position: " + byteBuffer.position());
       System.err.println("Current capacity: " + byteBuffer.capacity());
@@ -123,7 +124,8 @@ public class FileBuffer {
 
   /**
    * Add Packet to the saved out of order Packets.
-   * @param payload payload with data.
+   *
+   * @param payload       payload with data.
    * @param offsetPointer offset-pointer for location of data in final buffer
    */
   private void addPacketToSavedPackets(byte[] payload, int offsetPointer) {
@@ -138,7 +140,8 @@ public class FileBuffer {
       Path path = Paths.get(dst_path);
       Files.createDirectories(path.getParent());
 
-      try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
+      try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.CREATE,
+          StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
         byteBuffer.rewind();
         while (byteBuffer.hasRemaining()) {
           fileChannel.write(byteBuffer);

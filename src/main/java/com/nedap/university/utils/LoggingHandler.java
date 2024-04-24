@@ -6,9 +6,13 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Paths;
 
 public class LoggingHandler {
+
+  /**
+   * Redirect System error messages to keep Host application console clean.
+   * @param filePath file directory to store log.
+   */
 
   public static synchronized void redirectSystemErrToFile(String filePath) {
     File errorLogFile = new File(filePath);
@@ -23,6 +27,10 @@ public class LoggingHandler {
   }
 
   public static synchronized void resetFile(String filePath) {
-    File errorLogFile = new File(filePath);
+    try (FileWriter fw = new FileWriter(filePath, false)) {
+      fw.write("");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }

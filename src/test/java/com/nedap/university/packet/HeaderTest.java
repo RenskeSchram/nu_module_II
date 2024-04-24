@@ -1,11 +1,11 @@
 package com.nedap.university.packet;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.nedap.university.packet.Header.FLAG;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static com.nedap.university.utils.Parameters.HEADER_SIZE;
-import static com.nedap.university.utils.Parameters.MAX_PAYLOAD_SIZE;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class HeaderTest {
 
@@ -14,23 +14,6 @@ public class HeaderTest {
   @BeforeEach
   void setUp() {
     header = new Header();
-  }
-
-  @Test
-  void testGetSize() {
-    assertEquals(HEADER_SIZE, header.getSize());
-  }
-
-  @Test
-  void testSetAndGetPayloadDataSize() {
-    header.setPayloadDataSize(MAX_PAYLOAD_SIZE);
-    assertEquals(MAX_PAYLOAD_SIZE, header.getPayloadDataSize());
-  }
-
-  @Test
-  void testSetAndGetChecksum() {
-    header.setChecksum(789);
-    assertEquals(789, header.getChecksum());
   }
 
   @Test
@@ -48,5 +31,17 @@ public class HeaderTest {
     header.setWithPayload(payload);
     assertEquals(100, header.getPayloadDataSize());
     assertTrue(header.isFlagSet(Header.FLAG.FIN));
+  }
+
+  @Test
+  void testFlags() {
+    header.setFlag(FLAG.FIN);
+    assertTrue(header.isFlagSet(Header.FLAG.FIN));
+    // repetition should not remove
+    header.setFlag(FLAG.FIN);
+    assertTrue(header.isFlagSet(Header.FLAG.FIN));
+    // add extra
+    header.setFlag(FLAG.HELLO);
+    assertEquals(header.getFlagByte(), (byte) 0b00100001);
   }
 }

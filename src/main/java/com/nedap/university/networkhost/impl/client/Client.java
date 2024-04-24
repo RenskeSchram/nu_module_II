@@ -15,10 +15,11 @@ import java.util.List;
  * Client side implementation of AbstractHost: can initiate the upload and downloading of Files.
  */
 public class Client extends AbstractHost {
+
   private InetAddress dstInetAdress;
   private int dstPort;
 
-  private int finalReceivingAck;
+  int finalReceivingAck;
   private long startTime;
 
   Client(InetAddress dstAddress, int port) throws SocketException {
@@ -28,6 +29,11 @@ public class Client extends AbstractHost {
     finalReceivingAck = -1;
   }
 
+  /**
+   * Handling Packets by redirecting the valid packets to the ServiceHandler and keeping track when current service is finished.
+   * @param datagramPacket received packet to handle.
+   * @throws IOException if I/O exception occurs.
+   */
   @Override
   protected void handlePacket(DatagramPacket datagramPacket) throws IOException {
     Packet receivedPacket = new Packet(datagramPacket.getData());
@@ -37,7 +43,8 @@ public class Client extends AbstractHost {
     if (receivedAck == finalReceivingAck) {
       finalReceivingAck = -1;
       updateLastFrameReceived(receivedAck);
-      System.out.println("UPLOAD FINISHED in "  +(double) (endTime - startTime)/1000.0 + " seconds \n");
+      System.out.println(
+          "UPLOAD FINISHED in " + (double) (endTime - startTime) / 1000.0 + " seconds \n");
       inService = false;
       return;
     }
@@ -46,12 +53,12 @@ public class Client extends AbstractHost {
       serviceHandler.handlePacket(receivedPacket);
       finalReceivingAck = -1;
       updateLastFrameReceived(receivedAck);
-      System.out.println("DOWNLOAD FINISHED in " +(double) (endTime - startTime)/1000.0 + " seconds \n");
+      System.out.println(
+          "DOWNLOAD FINISHED in " + (double) (endTime - startTime) / 1000.0 + " seconds \n");
       inService = false;
       return;
     }
 
-    //Get and send response packet(s)
     List<Packet> responsePackets = serviceHandler.handlePacket(receivedPacket);
 
     if (!responsePackets.isEmpty()) {
@@ -66,6 +73,7 @@ public class Client extends AbstractHost {
 
   /**
    * Uploading file by initiating with an HELLO DATA packet.
+   *
    * @param src_dir source path of File to be sent
    * @param dst_dir destination path of File to be sent
    * @throws IOException if an I/O error occurs.
@@ -76,13 +84,12 @@ public class Client extends AbstractHost {
 
     Packet startUploadPacket = serviceHandler.startUpload(src_dir, dst_dir);
     setFinalReceivingAck(startUploadPacket);
-    sendPacket(startUploadPacket, dstInetAdress, dstPort);
-    LoggingHandler.resetFile("host.log");
-    service();
+    startNewService(startUploadPacket);
   }
 
   /**
    * Downloading file by initiating with an HELLO GET packet.
+   *
    * @param src_dir source path of File to be sent
    * @param dst_dir destination path of File to be sent
    * @throws IOException if an I/O error occurs.
@@ -90,15 +97,13 @@ public class Client extends AbstractHost {
   public void downloadFile(String src_dir, String dst_dir) throws IOException {
     System.out.println("DOWNLOADING");
     startTime = System.currentTimeMillis();
-
     Packet startDownloadPacket = serviceHandler.startDownload(src_dir, dst_dir);
-    sendPacket(startDownloadPacket, dstInetAdress, dstPort);
-    LoggingHandler.resetFile("host.log");
-    service();
+    startNewService(startDownloadPacket);
   }
 
   /**
    * Send Packet which asks for directory list on Server.
+   *
    * @param src_dir directory on Server.
    * @throws IOException if an I/O error occurs.
    */
@@ -106,20 +111,31 @@ public class Client extends AbstractHost {
     startTime = System.currentTimeMillis();
     System.out.println("FILE & DIRECTORY LIST of " + src_dir);
     Packet getListPacket = serviceHandler.getHelloListPacket(src_dir);
-    sendPacket(getListPacket, dstInetAdress, dstPort);
+    startNewService(getListPacket);
+  }
+
+  /**
+   * Start new service for downloading or uploading.
+   * @param packet packet to send to Server to initiate service.
+   * @throws IOException if an I/O error occurs.
+   */
+  public void startNewService(Packet packet) throws IOException {
+    sendPacket(packet, dstInetAdress, dstPort);
     LoggingHandler.resetFile("host.log");
     service();
   }
 
   /**
    * Update to stay indicated when current service is done and new TUI input can be retrieved.
+   *
    * @param servicePacket packet to obtain ack from
    */
   public void setFinalReceivingAck(Packet servicePacket) {
     if (servicePacket.getHeader().isFlagSet(FLAG.FIN)) {
       this.finalReceivingAck = servicePacket.getHeader().getAckNr();
     } else {
-      int numOfPackets = (int) Math.ceil((double) servicePacket.getPayload().getFileSize() / Parameters.MAX_PAYLOAD_SIZE);
+      int numOfPackets = (int) Math.ceil(
+          (double) servicePacket.getPayload().getFileSize() / Parameters.MAX_PAYLOAD_SIZE);
       this.finalReceivingAck = servicePacket.getHeader().getAckNr() + numOfPackets;
     }
   }

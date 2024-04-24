@@ -14,7 +14,6 @@ public class Checksum {
    * @return int value of the checksum
    */
   public static int calculateChecksum(Packet packet) {
-    // Extracting 16-bit elements from the array for checksum calculations
     byte[] packetBytes = packet.getByteArray();
     int[] checksumElements = new int[(packetBytes.length / 2) + 1];
 
@@ -28,7 +27,7 @@ public class Checksum {
         highByte = (packetBytes[i] << 8) & 0xFF00;
         lowByte = packetBytes[i + 1] & 0xFF;
       }
-      checksumElements[i / 2] = (highByte | lowByte);
+      checksumElements[i / 2] = highByte | lowByte;
     }
 
     // Set Checksum element to 0x0000
@@ -48,7 +47,8 @@ public class Checksum {
   }
 
   /**
-   * Verify of the calculated checksum is equal to the checksum as provided in the packet to ensure data integrity.
+   * Verify of the calculated checksum is equal to the checksum as provided in the packet to
+   * ensure data integrity.
    * @param packet packet to verify
    * @return true if data is found integer
    */

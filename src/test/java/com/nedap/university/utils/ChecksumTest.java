@@ -1,4 +1,5 @@
 package com.nedap.university.utils;
+
 import com.nedap.university.packet.Packet;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +26,9 @@ public class ChecksumTest {
     int checksum2 = Checksum.calculateChecksum(testAckPacket2);
     testAckPacket2.getHeader().setChecksum(checksum2);
     testAckPacket3.getHeader().setChecksum(checksum2);
+    // correct checksum
     assertTrue(Checksum.verifyChecksum(testAckPacket2));
+    // altered byte -> incorrect checksum
     assertFalse(Checksum.verifyChecksum(testAckPacket3));
   }
 }

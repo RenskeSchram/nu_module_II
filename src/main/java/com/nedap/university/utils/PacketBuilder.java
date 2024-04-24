@@ -6,7 +6,6 @@ import com.nedap.university.packet.Packet;
 import com.nedap.university.packet.Payload;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +18,7 @@ public class PacketBuilder {
 
   /**
    * Create Ack packet.
+   *
    * @param AckNr Ack number to be acknowledged.
    * @return Ack packet.
    */
@@ -31,9 +31,12 @@ public class PacketBuilder {
   }
 
   /**
-   * Create list Packet with String containing all files in the requested directory in the provided payload.
+   * Create list Packet with String containing all files in the requested directory in the provided
+   * payload.
+   *
    * @param payload payload with desired directory to obtain file and folder names from
-   * @return Packet with String containing all files in the requested directory in the provided payload
+   * @return Packet with String containing all files in the requested directory in the provided
+   * payload
    */
   public static Packet listPacket(Payload payload) {
     List<String> fileNames = new ArrayList<>();
@@ -43,7 +46,8 @@ public class PacketBuilder {
     try {
       fileNames = Files.walk(Paths.get(src_dir), 1)
           .filter(path -> !path.equals(Paths.get(src_dir)))
-          .map(path -> Files.isDirectory(path) ? "[" + path.getFileName() + "]" : path.getFileName().toString())
+          .map(path -> Files.isDirectory(path) ? "[" + path.getFileName() + "]"
+              : path.getFileName().toString())
           .collect(Collectors.toList());
     } catch (IOException e) {
       e.printStackTrace();
@@ -56,9 +60,9 @@ public class PacketBuilder {
         if (i < fileNames.size() - 1) {
           fileNameString.append("~");
         }
-      }} else {fileNameString.append("");
+      }
     }
-    Payload listPayload = new Payload(fileNameString.toString().getBytes(), 0 , true);
+    Payload listPayload = new Payload(fileNameString.toString().getBytes(), 0, true);
     Header header = new Header(listPayload);
     header.setFlagByte((byte) 0b00101000);
 
@@ -66,12 +70,15 @@ public class PacketBuilder {
   }
 
   /**
-   * Create Packet with HELLO and LIST flags in the header and payload with desired source dir to obtain list from.
+   * Create Packet with HELLO and LIST flags in the header and payload with desired source dir to
+   * obtain list from.
+   *
    * @param src_dir desired source dir to obtain list from.
-   * @return Packet with HELLO and LIST flags in the header and payload with desired source dir to obtain list from
+   * @return Packet with HELLO and LIST flags in the header and payload with desired source dir to
+   * obtain list from
    */
   public static Packet helloListPacket(String src_dir) {
-    Payload payload = new Payload(src_dir.toString().getBytes(), 0 , false);
+    Payload payload = new Payload(src_dir.getBytes(), 0, false);
     Header header = new Header(payload);
     header.setFlagByte((byte) 0b00001100);
     return new Packet(header, payload);
@@ -79,19 +86,22 @@ public class PacketBuilder {
 
   /**
    * Create Packet with HELLO and GET flags in the header and payload with directories.
+   *
    * @param src_dir desired source for file to obtain
    * @param dst_dir desired destination dir to store obtained file.
    * @return Packet with HELLO and GET flags in the header and payload with directories.
    */
   public static Packet getInitBuilderPacket(String src_dir, String dst_dir) {
-    Payload payload = new Payload(src_dir, dst_dir,0, false);
+    Payload payload = new Payload(src_dir, dst_dir, 0, false);
     Header header = new Header(payload);
     header.setFlagByte((byte) 0b00000101);
 
     return new Packet(header, payload);
   }
+
   /**
    * Create Packet with HELLO and DATA flags in the header and payload with directories.
+   *
    * @param src_path desired source for file to obtain
    * @param dst_path desired destination dir to store obtained file.
    * @return Packet with HELLO and DATA flags in the header and payload with directories.

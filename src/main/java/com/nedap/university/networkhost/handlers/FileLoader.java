@@ -20,7 +20,7 @@ import java.util.List;
  * FileLoader Class to extract data for Payload in Packets from a File.
  */
 public class FileLoader {
-  private Path src_path;
+  Path src_path;
   private int offsetPointer;
   private boolean initiated;
   int finalOffsetPointer;
@@ -97,7 +97,6 @@ public class FileLoader {
     this.offsetPointer = -1;
     this.finalOffsetPointer = -1;
   }
-
 
   ///////////////////////////////////////////////////////////////////////
   //                               TIJDELIJK                           //

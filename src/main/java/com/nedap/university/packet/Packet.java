@@ -3,12 +3,11 @@ package com.nedap.university.packet;
 import static com.nedap.university.utils.Parameters.HEADER_SIZE;
 
 import com.nedap.university.packet.Header.FLAG;
-import com.nedap.university.utils.Checksum;
 import com.nedap.university.utils.Parameters;
 import java.nio.ByteBuffer;
 
 /**
- * Packet object used troughout the differnt layers for processing, has a header and payload.
+ * Packet object used throughout the different layers for processing, has a header and payload.
  */
 
 public class Packet {

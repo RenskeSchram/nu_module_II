@@ -4,7 +4,6 @@ import com.nedap.university.utils.Parameters;
 
 /**
  * Protocol header for UDP file exchange.
- *
  *       __ Element __       __ Bytes __     __ Length __
  *        PayloadDataSize       [0-1]           2
  *        OffsetPointer         [2-3]           2
@@ -12,10 +11,11 @@ import com.nedap.university.utils.Parameters;
  *        Sequence number       [6-7]           2     (currently not in use)
  *        Checksum              [8-9]           2
  *        Flags                 [10]            1
- *        Unassigned            [11]            1
+ *        Unassigned            [11]            1     (currently not in use)
  */
 
 public class Header {
+
   private byte[] byteArray;
 
   public Header() {
@@ -25,10 +25,6 @@ public class Header {
   public Header(Payload payload) {
     byteArray = new byte[Parameters.HEADER_SIZE];
     setWithPayload(payload);
-  }
-
-  public int getSize() {
-    return byteArray.length;
   }
 
   public void setByteArray(byte[] byteArray) {
@@ -65,10 +61,13 @@ public class Header {
     byteArray[4] = (byte) (ACK >>> 8 & 0xff);
     byteArray[5] = (byte) (ACK & 0xff);
   }
+
   public int getAckNr() {
     return ((byteArray[4] & 0xFF) << 8) | (byteArray[5] & 0xFF);
   }
 
+
+  // SEQ num created for sliding window protocol, currently not in use.
   public void setSeqNr(int SEQ) {
     byteArray[6] = (byte) (SEQ >>> 8 & 0xff);
     byteArray[7] = (byte) (SEQ & 0xff);
@@ -105,7 +104,7 @@ public class Header {
   }
 
   /**
-   * Use payload to fill butes of the header with the payloadsize, offsetpointer and FIN flag.
+   * Use payload to fill bytes of the header with the Payload size, offset-pointer and FIN flag.
    * @param payload payload of the packet.
    */
   public void setWithPayload(Payload payload) {

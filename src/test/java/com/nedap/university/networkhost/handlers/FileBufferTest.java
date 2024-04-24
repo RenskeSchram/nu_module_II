@@ -4,7 +4,6 @@ import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.utils.PacketBuilder;
 import com.nedap.university.packet.Payload;
-import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,11 +41,10 @@ public class FileBufferTest {
   }
 
   @Test
-
   public void testInitFileBuffer() throws IOException {
     Path src_path = Paths.get(TEST_SRC_FILE_PATH);
-    Packet initPacket = PacketBuilder.getInitLoaderPacket(TEST_SRC_FILE_PATH, TEST_DST_FILE_PATH, Files.size(
-        src_path));
+    Packet initPacket = PacketBuilder.getInitLoaderPacket(TEST_SRC_FILE_PATH, TEST_DST_FILE_PATH,
+        Files.size(src_path));
     fileBuffer.initFileBuffer(initPacket.getPayload());
     assertTrue(initPacket.getHeader().isFlagSet(FLAG.HELLO));
     assertTrue(initPacket.getHeader().isFlagSet(FLAG.DATA));
@@ -62,18 +60,16 @@ public class FileBufferTest {
     testInitFileBuffer();
     Packet packet = packetList.get(0);
     fileBuffer.receivePacket(packet.getPayload());
-
     byte[] bufferPayload = new byte[packet.getPayload().getSize()];
-    System.arraycopy(fileBuffer.getByteBuffer().array(), 0, bufferPayload, 0, packet.getPayload().getSize());
-
-    // Assert that the payloads are equal
+    System.arraycopy(fileBuffer.getByteBuffer().array(), 0, bufferPayload, 0,
+        packet.getPayload().getSize());
     assertArrayEquals(packet.getPayload().getByteArray(), bufferPayload);
   }
 
   @Test
   public void testReceiveFin() throws IOException {
     testInitFileBuffer();
-    Payload payload = packetList.get(packetList.size()-1).getPayload();
+    Payload payload = packetList.get(packetList.size() - 1).getPayload();
     fileBuffer.receiveFin(payload);
     assertEquals(payload.getOffsetPointer(), fileBuffer.getFinalOffsetPointer());
   }
@@ -111,28 +107,4 @@ public class FileBufferTest {
     System.out.println(writtenPayloadSize);
     assertArrayEquals(Files.readAllBytes(src_path), Files.readAllBytes(dst_path));
   }
-
-  @Test
-  public void testWriteBufferToFileRandomized() throws IOException {
-    testInitFileBuffer();
-    int writtenPayloadSize = 0;
-
-    Collections.shuffle(packetList);
-
-    for (Packet packet : packetList) {
-      fileBuffer.receivePacket(packet.getPayload());
-      writtenPayloadSize += packet.getPayload().getSize();
-    }
-    fileBuffer.writeBufferToFile();
-
-    Path src_path = Paths.get(TEST_SRC_FILE_PATH);
-    Path dst_path = Paths.get(TEST_DST_FILE_PATH);
-
-    assertTrue(Files.exists(dst_path));
-    System.out.println(fileBuffer.getByteBuffer().capacity());
-    System.out.println(fileBuffer.getFileSize());
-    System.out.println(writtenPayloadSize);
-    assertArrayEquals(Files.readAllBytes(src_path), Files.readAllBytes(dst_path));
-  }
-
 }

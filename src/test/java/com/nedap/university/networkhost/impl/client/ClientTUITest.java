@@ -1,13 +1,12 @@
-    package com.nedap.university.networkhost.impl.client;
+package com.nedap.university.networkhost.impl.client;
 
-    import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-    import com.nedap.university.networkhost.impl.client.ClientTUI;
-    import java.io.ByteArrayInputStream;
-    import java.io.IOException;
-    import org.junit.jupiter.api.AfterEach;
-    import org.junit.jupiter.api.BeforeEach;
-    import org.junit.jupiter.api.Test;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ClientTUITest {
 

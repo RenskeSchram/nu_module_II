@@ -27,7 +27,6 @@ import java.util.TimerTask;
  *  (1) acknowledging of all correct incoming packets (valid checksum and withing receiving window)
  *  (2) storing out of order packets before pushing them to the next layer (ServiceHandler)
  *  (3) pushing correct packets to the ServiceHandler
- *
  * Sending packets with
  *  (1) adding the correct Checksum, InetAdress and Port to create and send the Packet as DatagramPacket.
  *  (2) handling the timer to resend timed out packets
@@ -44,7 +43,6 @@ public abstract class AbstractHost implements Host {
   protected HashMap<Integer, DatagramPacket> outOfOrderPackets = new HashMap<>();
 
   protected HashMap<Integer, Timer> unacknowledgedPackets;
-
   public AbstractHost(int port) throws SocketException {
     socket = new DatagramSocket(port);
     serviceHandler = new ServiceHandler();
@@ -59,7 +57,8 @@ public abstract class AbstractHost implements Host {
     inService = true;
 
     while (inService) {
-      DatagramPacket request = new DatagramPacket(new byte[Parameters.MAX_PACKET_SIZE], Parameters.MAX_PACKET_SIZE);
+      DatagramPacket request = new DatagramPacket(new byte[Parameters.MAX_PACKET_SIZE],
+          Parameters.MAX_PACKET_SIZE);
       socket.receive(request);
       Packet receivedPacket = new Packet(request.getData());
       int receivedAck = receivedPacket.getHeader().getAckNr();
@@ -89,20 +88,18 @@ public abstract class AbstractHost implements Host {
   @Override
   public void sendPacket(Packet packet, InetAddress dstAddress, int dstPort) throws IOException {
     packet.getHeader().setChecksum(Checksum.calculateChecksum(packet));
-    DatagramPacket datagramPacket = new DatagramPacket(packet.getByteArray(), packet.getSize(), dstAddress, dstPort);
+    DatagramPacket datagramPacket = new DatagramPacket(packet.getByteArray(), packet.getSize(),
+        dstAddress, dstPort);
 
     if (!packet.getHeader().isFlagSet(FLAG.ACK)) {
       setTimer(datagramPacket, packet.getHeader().getAckNr());
     }
-    //System.out.println("PACKET send with ACK nr: " + packet.getHeader().getAckNr()+ " and flags " + packet.getHeader().getFlagByte());
 
     socket.send(datagramPacket);
   }
 
   @Override
-  public boolean isValidPacket(Packet receivedPacket) throws IOException {
-    //System.out.println("PACKET received with ACK nr: " + receivedPacket.getHeader().getAckNr() + " and flags " + receivedPacket.getHeader().getFlagByte());
-
+  public boolean isValidPacket(Packet receivedPacket) {
     boolean correctChecksum = Checksum.verifyChecksum(receivedPacket);
     if (!correctChecksum) {
       System.err.println("incorrect Checksum");
@@ -115,13 +112,12 @@ public abstract class AbstractHost implements Host {
   }
 
   private boolean withinWindow(int receivedAck) {
-      return lastFrameReceived <= receivedAck && receivedAck <= largestAcceptableFrame;
+    return lastFrameReceived <= receivedAck && receivedAck <= largestAcceptableFrame;
   }
 
   protected void updateLastFrameReceived(int AckNr) {
     lastFrameReceived = AckNr;
     largestAcceptableFrame = lastFrameReceived + windowSize;
-    //System.out.println("RECEIVINGWINDOW    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
   }
 
   void checkOutOfOrderPackets() throws IOException {
@@ -151,7 +147,7 @@ public abstract class AbstractHost implements Host {
             socket.send(datagramPacket);
             retries++;
           } else {
-            System.err.println("MAX RETRIES EXCEEDED (" + ackNr+ ")");
+            System.err.println("MAX RETRIES EXCEEDED (" + ackNr + ")");
             cancelTimer(ackNr);
           }
         } catch (IOException e) {
@@ -159,7 +155,7 @@ public abstract class AbstractHost implements Host {
         }
       }
     };
-    timer.scheduleAtFixedRate(task,  TIMEOUT_DURATION, TIMEOUT_DURATION);
+    timer.scheduleAtFixedRate(task, TIMEOUT_DURATION, TIMEOUT_DURATION);
     unacknowledgedPackets.put(ackNr, timer);
   }
 

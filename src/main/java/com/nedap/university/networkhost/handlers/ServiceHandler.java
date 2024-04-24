@@ -17,9 +17,7 @@ public class ServiceHandler {
   FileLoader fileLoader;
 
   // Sending Window
-  private final int windowSize = 1;
   private int lastAckReceived = -1;
-  private int lastFrameInWindow = 0;
   private int lastFrameSent = -1;
 
   public ServiceHandler(){
@@ -44,6 +42,7 @@ public class ServiceHandler {
     switch (flags) {
       default:
         System.out.println("INVALID Flags, could not handle packet");
+        break;
 
         // Receiving
       case (byte) 0b00000011:   // HELLO + DATA
@@ -95,8 +94,6 @@ public class ServiceHandler {
     for (Packet packet : packetsToSend) {
       lastFrameSent = packet.getHeader().getAckNr();
     }
-    //lastFrameInWindow = lastAckReceived + windowSize;
-    //System.out.println("SENDINGWINDOW       LAR: " + lastAckReceived + ", LSF: " + lastFrameSent + " and LFIW: " + lastFrameInWindow);
     return packetsToSend;
   }
 

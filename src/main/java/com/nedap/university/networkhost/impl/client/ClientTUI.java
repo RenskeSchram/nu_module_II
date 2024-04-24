@@ -7,13 +7,13 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 /**
- *  CLient TUI application to run the Client side of the connection.
+ * Client TUI application to run the Client side of the connection.
  */
 public class ClientTUI {
 
   private Client client;
   private String CLIENT_HOME = "example_files/";
-  private String SERVER_HOME =  "home/pi/PiServer/";
+  private String SERVER_HOME = "home/pi/PiServer/";
   boolean runTui = true;
 
   public void runTUI() throws IOException, InterruptedException {
@@ -63,33 +63,33 @@ public class ClientTUI {
   }
 
   private void handleClientInput(String systemTuiInput) throws IOException {
-      String[] protocol = systemTuiInput.split(" ");
+    String[] protocol = systemTuiInput.split(" ");
 
-      switch (protocol[0].toLowerCase()) {
-        case "send":
-          if (protocol.length == 3) {
-            client.uploadFile(CLIENT_HOME + protocol[1], SERVER_HOME + protocol[2]);
-          } else {
-            System.err.println("Invalid input length, try again.");
-          }
-          break;
-        case "get":
-          if (protocol.length == 3) {
-            client.downloadFile(SERVER_HOME + protocol[1], CLIENT_HOME + protocol[2]);
-          } else {
-            System.err.println("Invalid input length, try again.");
-          }
-          break;
-        case "list":
-          if (protocol.length == 1) {
-            client.getList(SERVER_HOME);
-          } else if (protocol.length == 2) {
-            client.getList(SERVER_HOME + protocol[1]);
-          } else {
-            System.err.println("Invalid input length, try again.");
-          }
-          break;
-      }
+    switch (protocol[0].toLowerCase()) {
+      case "send":
+        if (protocol.length == 3) {
+          client.uploadFile(CLIENT_HOME + protocol[1], SERVER_HOME + protocol[2]);
+        } else {
+          System.err.println("Invalid input length, try again.");
+        }
+        break;
+      case "get":
+        if (protocol.length == 3) {
+          client.downloadFile(SERVER_HOME + protocol[1], CLIENT_HOME + protocol[2]);
+        } else {
+          System.err.println("Invalid input length, try again.");
+        }
+        break;
+      case "list":
+        if (protocol.length == 1) {
+          client.getList(SERVER_HOME);
+        } else if (protocol.length == 2) {
+          client.getList(SERVER_HOME + protocol[1]);
+        } else {
+          System.err.println("Invalid input length, try again.");
+        }
+        break;
+    }
   }
 
   public static void main(String[] args) throws IOException, InterruptedException {
