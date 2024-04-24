@@ -1,12 +1,10 @@
 package com.nedap.university.UDPTest;
 
-import com.nedap.university.ServiceHandler;
+import com.nedap.university.networkhost.handlers.ServiceHandler;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.utils.Parameters;
 import java.io.*;
 import java.net.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class QuoteServer {

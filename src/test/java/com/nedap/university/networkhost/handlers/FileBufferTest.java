@@ -1,4 +1,4 @@
-package com.nedap.university;
+package com.nedap.university.networkhost.handlers;
 
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static com.nedap.university.FileLoaderTest.*;
+import static com.nedap.university.networkhost.handlers.FileLoaderTest.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;

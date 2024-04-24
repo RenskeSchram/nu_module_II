@@ -1,8 +1,10 @@
-package com.nedap.university;
+package com.nedap.university.networkhost.impl;
 
 import static com.nedap.university.utils.Parameters.MAX_RETRIES;
 import static com.nedap.university.utils.Parameters.TIMEOUT_DURATION;
 
+import com.nedap.university.networkhost.handlers.ServiceHandler;
+import com.nedap.university.networkhost.Host;
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.utils.LoggingHandler;
@@ -14,13 +16,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 
 /**
@@ -40,10 +38,10 @@ public abstract class AbstractHost implements Host {
   protected ServiceHandler serviceHandler;
   protected boolean inService;
 
-  int windowSize = 3;
-  int lastFrameReceived = -1;
-  int largestAcceptableFrame = lastFrameReceived + windowSize;
-  HashMap<Integer, DatagramPacket> outOfOrderPackets = new HashMap<>();
+  protected int windowSize = 3;
+  protected int lastFrameReceived = -1;
+  protected int largestAcceptableFrame = lastFrameReceived + windowSize;
+  protected HashMap<Integer, DatagramPacket> outOfOrderPackets = new HashMap<>();
 
   protected HashMap<Integer, Timer> unacknowledgedPackets;
 
@@ -56,6 +54,8 @@ public abstract class AbstractHost implements Host {
 
 
   public void service() throws IOException {
+    LoggingHandler.redirectSystemErrToFile("host.log");
+
     inService = true;
 
     while (inService) {
@@ -118,7 +118,7 @@ public abstract class AbstractHost implements Host {
       return lastFrameReceived <= receivedAck && receivedAck <= largestAcceptableFrame;
   }
 
-  void updateLastFrameReceived(int AckNr) {
+  protected void updateLastFrameReceived(int AckNr) {
     lastFrameReceived = AckNr;
     largestAcceptableFrame = lastFrameReceived + windowSize;
     //System.out.println("RECEIVINGWINDOW    LFR: " + lastFrameReceived + " and LAF: " + largestAcceptableFrame);
@@ -131,7 +131,7 @@ public abstract class AbstractHost implements Host {
     }
   }
 
-  abstract void handlePacket(DatagramPacket datagramPacket) throws IOException;
+  protected abstract void handlePacket(DatagramPacket datagramPacket) throws IOException;
 
   /**
    * Timer function to resend lost or delayed Packets.

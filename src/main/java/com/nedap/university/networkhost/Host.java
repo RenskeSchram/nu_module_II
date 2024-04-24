@@ -1,4 +1,4 @@
-package com.nedap.university;
+package com.nedap.university.networkhost;
 
 import com.nedap.university.packet.Packet;
 import java.io.IOException;

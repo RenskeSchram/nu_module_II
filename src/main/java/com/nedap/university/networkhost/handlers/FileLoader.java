@@ -1,4 +1,4 @@
-package com.nedap.university;
+package com.nedap.university.networkhost.handlers;
 
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
@@ -33,11 +33,17 @@ public class FileLoader {
    * @throws IOException  if an I/O error occurs.
    */
   public Packet initFileLoading(String src_path, String dst_path) throws IOException {
-    this.initiated = true;
-    this.src_path = Paths.get(src_path);
-    this.offsetPointer = 0;
-    this.finalOffsetPointer = (int) Math.ceil((double) Files.size(this.src_path) / Parameters.MAX_PAYLOAD_SIZE);
-    return PacketBuilder.getInitLoaderPacket(src_path, dst_path, Files.size(this.src_path));
+    Path src = Paths.get(src_path);
+    if (Files.exists(src)) {
+      this.initiated = true;
+      this.src_path = Paths.get(src_path);
+      this.offsetPointer = 0;
+      this.finalOffsetPointer = (int) Math.ceil(
+          (double) Files.size(this.src_path) / Parameters.MAX_PAYLOAD_SIZE);
+      return PacketBuilder.getInitLoaderPacket(src_path, dst_path, Files.size(this.src_path));
+    } else {
+      return PacketBuilder.getNoSuchFilePacket();
+    }
   }
 
   /**

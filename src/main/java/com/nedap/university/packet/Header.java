@@ -118,7 +118,7 @@ public class Header {
   }
 
   public enum FLAG {
-    HELLO(0), DATA(1), GET(2), LIST(3), ACK(4), FIN(5);
+    HELLO(0), DATA(1), GET(2), LIST(3), ACK(4), FIN(5), ERROR(6);
 
     private final int byteLocation;
 

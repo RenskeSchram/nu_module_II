@@ -76,5 +76,7 @@ public class Payload {
     return Integer.parseInt(getStringArray()[2]);
   }
 
-  public boolean isFinalPacket() {return isFinalPacket;}
+  public boolean isFinalPacket() {
+    return isFinalPacket;
+  }
 }

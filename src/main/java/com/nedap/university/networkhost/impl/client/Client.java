@@ -1,19 +1,20 @@
-package com.nedap.university;
+package com.nedap.university.networkhost.impl.client;
 
+import com.nedap.university.networkhost.impl.AbstractHost;
 import com.nedap.university.packet.Header.FLAG;
 import com.nedap.university.packet.Packet;
+import com.nedap.university.utils.LoggingHandler;
 import com.nedap.university.utils.Parameters;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.sql.SQLOutput;
 import java.util.List;
 
 /**
  * Client side implementation of AbstractHost: can initiate the upload and downloading of Files.
  */
-public class Client extends AbstractHost{
+public class Client extends AbstractHost {
   private InetAddress dstInetAdress;
   private int dstPort;
 
@@ -36,7 +37,7 @@ public class Client extends AbstractHost{
     if (receivedAck == finalReceivingAck) {
       finalReceivingAck = -1;
       updateLastFrameReceived(receivedAck);
-      System.out.println("UPLOAD FINISHED in "  + (endTime - startTime)/1000 + " seconds \n");
+      System.out.println("UPLOAD FINISHED in "  +(double) (endTime - startTime)/1000.0 + " seconds \n");
       inService = false;
       return;
     }
@@ -45,7 +46,7 @@ public class Client extends AbstractHost{
       serviceHandler.handlePacket(receivedPacket);
       finalReceivingAck = -1;
       updateLastFrameReceived(receivedAck);
-      System.out.println("DOWNLOAD FINISHED in " + (endTime - startTime)/1000 + " seconds \n");
+      System.out.println("DOWNLOAD FINISHED in " +(double) (endTime - startTime)/1000.0 + " seconds \n");
       inService = false;
       return;
     }
@@ -70,12 +71,13 @@ public class Client extends AbstractHost{
    * @throws IOException if an I/O error occurs.
    */
   public void uploadFile(String src_dir, String dst_dir) throws IOException {
-    System.out.println("UPLOAD STARTED");
+    System.out.println("UPLOADING");
     startTime = System.currentTimeMillis();
 
     Packet startUploadPacket = serviceHandler.startUpload(src_dir, dst_dir);
     setFinalReceivingAck(startUploadPacket);
     sendPacket(startUploadPacket, dstInetAdress, dstPort);
+    LoggingHandler.resetFile("host.log");
     service();
   }
 
@@ -86,11 +88,12 @@ public class Client extends AbstractHost{
    * @throws IOException if an I/O error occurs.
    */
   public void downloadFile(String src_dir, String dst_dir) throws IOException {
-    System.out.println("DOWNLOAD STARTED");
+    System.out.println("DOWNLOADING");
     startTime = System.currentTimeMillis();
 
     Packet startDownloadPacket = serviceHandler.startDownload(src_dir, dst_dir);
     sendPacket(startDownloadPacket, dstInetAdress, dstPort);
+    LoggingHandler.resetFile("host.log");
     service();
   }
 
@@ -100,11 +103,11 @@ public class Client extends AbstractHost{
    * @throws IOException if an I/O error occurs.
    */
   public void getList(String src_dir) throws IOException {
-    System.out.println("FILE & DIRECTORY LIST of " + src_dir);
     startTime = System.currentTimeMillis();
-
+    System.out.println("FILE & DIRECTORY LIST of " + src_dir);
     Packet getListPacket = serviceHandler.getHelloListPacket(src_dir);
     sendPacket(getListPacket, dstInetAdress, dstPort);
+    LoggingHandler.resetFile("host.log");
     service();
   }
 
@@ -113,7 +116,11 @@ public class Client extends AbstractHost{
    * @param servicePacket packet to obtain ack from
    */
   public void setFinalReceivingAck(Packet servicePacket) {
-    int numOfPackets = (int) Math.ceil((double) servicePacket.getPayload().getFileSize() / Parameters.MAX_PAYLOAD_SIZE);
-    this.finalReceivingAck = servicePacket.getHeader().getAckNr() + numOfPackets;
+    if (servicePacket.getHeader().isFlagSet(FLAG.FIN)) {
+      this.finalReceivingAck = servicePacket.getHeader().getAckNr();
+    } else {
+      int numOfPackets = (int) Math.ceil((double) servicePacket.getPayload().getFileSize() / Parameters.MAX_PAYLOAD_SIZE);
+      this.finalReceivingAck = servicePacket.getHeader().getAckNr() + numOfPackets;
+    }
   }
 }

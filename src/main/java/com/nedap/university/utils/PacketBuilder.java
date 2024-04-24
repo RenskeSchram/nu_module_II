@@ -104,4 +104,13 @@ public class PacketBuilder {
 
     return new Packet(header, payload);
   }
+
+  public static Packet getNoSuchFilePacket() {
+    byte[] errorMessage = "NoSuchFile".getBytes();
+    Payload payload = new Payload(errorMessage, 0, true);
+    Header header = new Header(payload);
+    header.setFlag(FLAG.ERROR);
+
+    return new Packet(header, payload);
+  }
 }

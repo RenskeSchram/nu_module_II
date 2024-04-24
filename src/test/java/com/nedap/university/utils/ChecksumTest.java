@@ -1,11 +1,7 @@
 package com.nedap.university.utils;
 import com.nedap.university.packet.Packet;
-import com.nedap.university.packet.Payload;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static com.nedap.university.FileLoaderTest.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 

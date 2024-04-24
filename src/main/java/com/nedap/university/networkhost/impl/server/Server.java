@@ -1,13 +1,10 @@
-package com.nedap.university;
+package com.nedap.university.networkhost.impl.server;
 
-import com.nedap.university.ServiceHandler;
-import com.nedap.university.packet.Header.FLAG;
+import com.nedap.university.networkhost.impl.AbstractHost;
 import com.nedap.university.packet.Packet;
-import com.nedap.university.utils.Parameters;
+import com.nedap.university.utils.LoggingHandler;
 import java.io.*;
 import java.net.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -21,12 +18,13 @@ public class Server extends AbstractHost {
 
   public static void main(String[] args) {
     if (args.length != 1) {
-      System.out.println("Syntax: QuoteServer <port>");
+      System.err.println("Syntax: QuoteServer <port>");
       return;
     }
 
     int port = Integer.parseInt(args[0]);
-    System.out.println("starting at port" + port);
+    System.out.println("Setup at port " + port);
+    LoggingHandler.resetFile("host.log");
 
     while (true) {
       try {
@@ -41,7 +39,7 @@ public class Server extends AbstractHost {
   }
 
   @Override
-  void handlePacket(DatagramPacket datagramPacket) throws IOException {
+  public void handlePacket(DatagramPacket datagramPacket) throws IOException {
     Packet receivedPacket = new Packet(datagramPacket.getData());
 
     //Get and send response packet(s)

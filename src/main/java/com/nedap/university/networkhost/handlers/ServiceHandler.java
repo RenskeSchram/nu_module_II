@@ -1,4 +1,4 @@
-package com.nedap.university;
+package com.nedap.university.networkhost.handlers;
 
 import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Packet;
@@ -6,6 +6,7 @@ import com.nedap.university.utils.PacketBuilder;
 import com.nedap.university.packet.Payload;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -64,6 +65,11 @@ public class ServiceHandler {
         lastFrameSent = lastAckReceived;
         break;
 
+      case (byte) 0b01100000:    // ERROR + FIN
+        printError(payload);
+        lastFrameSent = lastAckReceived;
+        break;
+
       // Sending
       case (byte) 0b00000101:   // HELLO + GET
         Packet helloGetPacket = startUpload(payload.getSrcPath(), payload.getDstPath());
@@ -115,6 +121,11 @@ public class ServiceHandler {
     }
     System.out.println();
   }
+
+  private void printError(Payload payload) {
+    System.err.println("ERROR " + new String(payload.getByteArray()));
+  }
+
 
   private Packet getListPacket(Payload payload) {
     Packet listPacket = PacketBuilder.listPacket(payload);

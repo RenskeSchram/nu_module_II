@@ -1,6 +1,6 @@
 package com.nedap.university;
 
-import com.nedap.university.Server;
+import com.nedap.university.networkhost.impl.server.Server;
 
 /**
  * Main Class to start and run Server side.

@@ -1,4 +1,4 @@
-package com.nedap.university;
+package com.nedap.university.networkhost.handlers;
 
 import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Header.FLAG;

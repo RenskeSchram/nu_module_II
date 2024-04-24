@@ -1,6 +1,8 @@
-package com.nedap.university;
+package com.nedap.university.networkhost.handlers;
 
 
+import com.nedap.university.networkhost.handlers.FileLoader;
+import com.nedap.university.networkhost.handlers.ServiceHandler;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.utils.PacketBuilder;
 import java.io.IOException;
@@ -10,7 +12,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class PacketHandlerTest {
+public class ServiceHandlerTest {
 
   private FileLoader fileLoader;
   private ServiceHandler serviceHandler;

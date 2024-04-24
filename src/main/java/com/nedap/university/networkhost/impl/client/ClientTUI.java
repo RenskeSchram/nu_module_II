@@ -1,29 +1,24 @@
-package com.nedap.university;
+package com.nedap.university.networkhost.impl.client;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.SimpleFormatter;
 
 /**
  *  CLient TUI application to run the Client side of the connection.
  */
 public class ClientTUI {
+
+  private Client client;
+  private String CLIENT_HOME = "example_files/";
+  private String SERVER_HOME =  "home/pi/PiServer/";
   boolean runTui = true;
-  Client client;
-  String CLIENT_HOME = "example_files/";
-  String SERVER_HOME =  "home/pi/PiServer/";
 
   public void runTUI() throws IOException, InterruptedException {
     Scanner scanner = new Scanner(System.in);
 
-    // retrieve host ip
     InetAddress hostname = null;
     boolean validHostname = false;
     while (!validHostname) {
@@ -36,7 +31,6 @@ public class ClientTUI {
       }
     }
 
-    // retrieve port number
     int port = -1;
     boolean validPort = false;
     while (!validPort) {
@@ -68,13 +62,7 @@ public class ClientTUI {
     }
   }
 
-  public static void main(String[] args) throws IOException, InterruptedException {
-    ClientTUI clientTUI = new ClientTUI();
-    clientTUI.runTUI();
-
-  }
-
-  private void handleClientInput(String systemTuiInput) throws InterruptedException, IOException {
+  private void handleClientInput(String systemTuiInput) throws IOException {
       String[] protocol = systemTuiInput.split(" ");
 
       switch (protocol[0].toLowerCase()) {
@@ -82,14 +70,14 @@ public class ClientTUI {
           if (protocol.length == 3) {
             client.uploadFile(CLIENT_HOME + protocol[1], SERVER_HOME + protocol[2]);
           } else {
-            System.out.println("Invalid input length, try again.");
+            System.err.println("Invalid input length, try again.");
           }
           break;
         case "get":
           if (protocol.length == 3) {
             client.downloadFile(SERVER_HOME + protocol[1], CLIENT_HOME + protocol[2]);
           } else {
-            System.out.println("Invalid input length, try again.");
+            System.err.println("Invalid input length, try again.");
           }
           break;
         case "list":
@@ -98,11 +86,15 @@ public class ClientTUI {
           } else if (protocol.length == 2) {
             client.getList(SERVER_HOME + protocol[1]);
           } else {
-            System.out.println("Invalid input length, try again.");
+            System.err.println("Invalid input length, try again.");
           }
           break;
-
       }
+  }
+
+  public static void main(String[] args) throws IOException, InterruptedException {
+    ClientTUI clientTUI = new ClientTUI();
+    clientTUI.runTUI();
   }
 
   @Override
