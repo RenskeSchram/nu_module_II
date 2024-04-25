@@ -34,7 +34,7 @@ public class AbstractHostTest {
     }
     LoggingHandler.redirectSystemErrToFile(TEST_FILE_PATH);
 
-    abstractHost = new AbstractHost(1212) {
+    abstractHost = new AbstractHost(9868) {
       @Override
       protected void handlePacket(DatagramPacket datagramPacket) {
       }

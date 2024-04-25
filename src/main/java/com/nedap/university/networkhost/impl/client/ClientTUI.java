@@ -89,6 +89,13 @@ public class ClientTUI {
           System.err.println("Invalid input length, try again.");
         }
         break;
+      case "delete":
+        if (protocol.length == 2) {
+          client.deleteFile(SERVER_HOME + protocol[1]);
+        } else {
+          System.err.println("Invalid input length, try again.");
+        }
+        break;
     }
   }
 
@@ -104,6 +111,7 @@ public class ClientTUI {
             "   send <src_dir> <dst_dir>.... send file \n" +
             "   get  <src_dir> <dst_dir>.... get file \n" +
             "   list <src_dir> ............. get filenames stored directory \n" +
+            "   delete <src_dir> ........... delete file on server \n" +
             "   disconnect ................. disconnect and stop \n" +
             "   help ....................... help (this menu) \n";
   }

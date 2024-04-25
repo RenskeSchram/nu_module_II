@@ -44,7 +44,7 @@ public class Client extends AbstractHost {
       finalReceivingAck = -1;
       updateLastFrameReceived(receivedAck);
       System.out.println(
-          "UPLOAD FINISHED in " + (double) (endTime - startTime) / 1000.0 + " seconds \n");
+          "FINISHED in " + (double) (endTime - startTime) / 1000.0 + " seconds \n");
       inService = false;
       return;
     }
@@ -54,7 +54,7 @@ public class Client extends AbstractHost {
       finalReceivingAck = -1;
       updateLastFrameReceived(receivedAck);
       System.out.println(
-          "DOWNLOAD FINISHED in " + (double) (endTime - startTime) / 1000.0 + " seconds \n");
+          "FINISHED in " + (double) (endTime - startTime) / 1000.0 + " seconds \n");
       inService = false;
       return;
     }
@@ -110,9 +110,23 @@ public class Client extends AbstractHost {
   public void getList(String src_dir) throws IOException {
     startTime = System.currentTimeMillis();
     System.out.println("FILE & DIRECTORY LIST of " + src_dir);
-    Packet getListPacket = serviceHandler.getHelloListPacket(src_dir);
+    Packet getListPacket = serviceHandler.startList(src_dir);
     startNewService(getListPacket);
   }
+
+  /**
+   * Send Packet which asks for directory list on Server.
+   *
+   * @param src_dir directory on Server.
+   * @throws IOException if an I/O error occurs.
+   */
+  public void deleteFile(String src_dir) throws IOException {
+    startTime = System.currentTimeMillis();
+    System.out.println("DELETING " + src_dir);
+    Packet deletePacket = serviceHandler.startDelete(src_dir);
+    startNewService(deletePacket);
+  }
+
 
   /**
    * Start new service for downloading or uploading.

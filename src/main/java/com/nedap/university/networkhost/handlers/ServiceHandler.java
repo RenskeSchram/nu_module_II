@@ -4,15 +4,18 @@ import com.nedap.university.packet.Header;
 import com.nedap.university.packet.Packet;
 import com.nedap.university.utils.PacketBuilder;
 import com.nedap.university.packet.Payload;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * Layer which handles the ordered and accepted Packets by reffering them to the next correct layer
+ * Layer which handles the ordered and accepted Packets by referring them to the next correct layer
  * and returning the response Packets to the Host layer.
  */
 public class ServiceHandler {
+
   FileBuffer fileBuffer;
   FileLoader fileLoader;
 
@@ -20,13 +23,14 @@ public class ServiceHandler {
   private int lastAckReceived = -1;
   private int lastFrameSent = -1;
 
-  public ServiceHandler(){
+  public ServiceHandler() {
     fileBuffer = new FileBuffer();
     fileLoader = new FileLoader();
   }
 
   /**
    * Base action of Packet on the Flags.
+   *
    * @param receivedPacket received Packet to handle.
    * @return List of possible to be sent Packets.
    * @throws IOException is I/O error occurs.
@@ -36,15 +40,10 @@ public class ServiceHandler {
     Header header = receivedPacket.getHeader();
     Payload payload = receivedPacket.getPayload();
     lastAckReceived = header.getAckNr();
-
     byte flags = header.getFlagByte();
 
     switch (flags) {
-      default:
-        System.out.println("INVALID Flags, could not handle packet");
-        break;
-
-        // Receiving
+      // Receiving
       case (byte) 0b00000011:   // HELLO + DATA
         fileBuffer.initFileBuffer(payload);
         break;
@@ -69,6 +68,15 @@ public class ServiceHandler {
         lastFrameSent = lastAckReceived;
         break;
 
+      case (byte) 0b10100000:    // DELETE + FIN
+        if (Arrays.equals(payload.getByteArray(), new byte[]{(byte) 1})) {
+          System.out.println("SUCCESSFUL");
+        } else {
+          System.out.println("FAILED");
+        }
+        lastFrameSent = lastAckReceived;
+        break;
+
       // Sending
       case (byte) 0b00000101:   // HELLO + GET
         Packet helloGetPacket = startUpload(payload.getSrcPath(), payload.getDstPath());
@@ -85,9 +93,19 @@ public class ServiceHandler {
         break;
 
       case (byte) 0b00001100:   // HELLO + LIST
-        Packet listPacket = getListPacket(payload);
+        Packet listPacket = getFinListPacket(payload);
         listPacket.getHeader().setAckNr(lastFrameSent + 1);
-        packetsToSend.add(getListPacket(payload));
+        packetsToSend.add(getFinListPacket(payload));
+        break;
+
+      case (byte) 0b10000001: // HELLO + DELETE
+        Packet deletePacket = getFinDeletePacket(payload);
+        deletePacket.getHeader().setAckNr(lastFrameSent + 1);
+        packetsToSend.add(deletePacket);
+        break;
+
+      default:
+        System.out.println("INVALID Flags, could not handle packet");
         break;
     }
 
@@ -96,8 +114,6 @@ public class ServiceHandler {
     }
     return packetsToSend;
   }
-
-
 
   public Packet startUpload(String src_path, String dst_path) throws IOException {
     Packet initPacket = fileLoader.initFileLoading(src_path, dst_path);
@@ -113,6 +129,24 @@ public class ServiceHandler {
     return initPacket;
   }
 
+  private void printError(Payload payload) {
+    System.err.println("ERROR " + new String(payload.getByteArray()));
+  }
+
+  public Packet startList(String src_dir) {
+    Packet helloListPacket = PacketBuilder.helloListPacket(src_dir);
+    helloListPacket.getHeader().setAckNr(lastFrameSent + 1);
+    lastFrameSent++;
+    return helloListPacket;
+  }
+
+  private Packet getFinListPacket(Payload payload) {
+    Packet listPacket = PacketBuilder.listPacket(payload);
+    listPacket.getHeader().setAckNr(lastFrameSent + 1);
+    lastFrameSent++;
+    return listPacket;
+  }
+
   private void printListPacket(Payload payload) {
     String[] fileNames = payload.getStringArray();
     for (String fileName : fileNames) {
@@ -121,21 +155,29 @@ public class ServiceHandler {
     System.out.println();
   }
 
-  private void printError(Payload payload) {
-    System.err.println("ERROR " + new String(payload.getByteArray()));
+
+  public Packet startDelete(String src_dir) {
+    Packet deletePacket = PacketBuilder.helloDeletePacket(src_dir);
+    deletePacket.getHeader().setAckNr(lastFrameSent + 1);
+    lastFrameSent++;
+    return deletePacket;
   }
 
-
-  private Packet getListPacket(Payload payload) {
-    Packet listPacket = PacketBuilder.listPacket(payload);
+  private Packet getFinDeletePacket(Payload payload) {
+    Packet listPacket = deletePacket(payload);
     listPacket.getHeader().setAckNr(lastFrameSent + 1);
     lastFrameSent++;
     return listPacket;
   }
-  public Packet getHelloListPacket(String src_dir) {
-    Packet helloListPacket = PacketBuilder.helloListPacket(src_dir);
-    helloListPacket.getHeader().setAckNr(lastFrameSent + 1);
-    lastFrameSent++;
-    return helloListPacket;
+
+  private Packet deletePacket(Payload payload) {
+    String src_dir = payload.getSrcPath().split("~")[0];
+    File file = new File(src_dir);
+
+    if (file.delete()) {
+      return PacketBuilder.finDeletePacket(true);
+    } else {
+      return PacketBuilder.finDeletePacket(false);
+    }
   }
 }

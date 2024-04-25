@@ -60,7 +60,6 @@ public abstract class AbstractHost implements Host {
           Parameters.MAX_PACKET_SIZE);
       socket.receive(request);
       Packet receivedPacket = new Packet(request.getData());
-      System.err.println("RECEIVED with FLAGS: " + receivedPacket.getHeader().getFlagByte() + " and ACK " + receivedPacket.getHeader().getAckNr());
 
       int receivedAck = receivedPacket.getHeader().getAckNr();
 
@@ -95,7 +94,6 @@ public abstract class AbstractHost implements Host {
     if (!packet.getHeader().isFlagSet(FLAG.ACK)) {
       setTimer(datagramPacket, packet.getHeader().getAckNr());
     }
-    //System.err.println("SEND with FLAGS: " + packet.getHeader().getFlagByte() + " and ACK " + packet.getHeader().getAckNr());
     socket.send(datagramPacket);
   }
 

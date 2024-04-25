@@ -54,12 +54,10 @@ public class PacketBuilder {
     }
 
     StringBuilder fileNameString = new StringBuilder();
-    if (fileNames != null) {
-      for (int i = 0; i < fileNames.size(); i++) {
-        fileNameString.append(fileNames.get(i));
-        if (i < fileNames.size() - 1) {
-          fileNameString.append("~");
-        }
+    for (int i = 0; i < fileNames.size(); i++) {
+      fileNameString.append(fileNames.get(i));
+      if (i < fileNames.size() - 1) {
+        fileNameString.append("~");
       }
     }
     Payload listPayload = new Payload(fileNameString.toString().getBytes(), 0, true);
@@ -121,6 +119,21 @@ public class PacketBuilder {
     Header header = new Header(payload);
     header.setFlag(FLAG.ERROR);
 
+    return new Packet(header, payload);
+  }
+
+  public static Packet helloDeletePacket(String src_dir) {
+    Payload payload = new Payload(src_dir.getBytes(), 0, false);
+    Header header = new Header(payload);
+    header.setFlagByte((byte) 0b10000001);
+    return new Packet(header, payload);
+  }
+
+  public static Packet finDeletePacket(Boolean deleted) {
+    int deletedInt = deleted ? 1 : 0;
+    Payload payload = new Payload(new byte[]{((byte) deletedInt)}, 0, true);
+    Header header = new Header(payload);
+    header.setFlagByte((byte) 0b10100000);
     return new Packet(header, payload);
   }
 }
