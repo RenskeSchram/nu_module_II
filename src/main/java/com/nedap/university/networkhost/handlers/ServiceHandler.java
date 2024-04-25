@@ -6,11 +6,11 @@ import com.nedap.university.utils.PacketBuilder;
 import com.nedap.university.packet.Payload;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
- * Layer which handles the ordered and accepted Packets.
+ * Layer which handles the ordered and accepted Packets by reffering them to the next correct layer
+ * and returning the response Packets to the Host layer.
  */
 public class ServiceHandler {
   FileBuffer fileBuffer;
@@ -97,6 +97,8 @@ public class ServiceHandler {
     return packetsToSend;
   }
 
+
+
   public Packet startUpload(String src_path, String dst_path) throws IOException {
     Packet initPacket = fileLoader.initFileLoading(src_path, dst_path);
     initPacket.getHeader().setAckNr(lastFrameSent + 1);
@@ -130,7 +132,6 @@ public class ServiceHandler {
     lastFrameSent++;
     return listPacket;
   }
-
   public Packet getHelloListPacket(String src_dir) {
     Packet helloListPacket = PacketBuilder.helloListPacket(src_dir);
     helloListPacket.getHeader().setAckNr(lastFrameSent + 1);

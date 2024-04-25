@@ -34,7 +34,7 @@ public class AbstractHostTest {
     }
     LoggingHandler.redirectSystemErrToFile(TEST_FILE_PATH);
 
-    abstractHost = new AbstractHost(1234) {
+    abstractHost = new AbstractHost(1212) {
       @Override
       protected void handlePacket(DatagramPacket datagramPacket) {
       }
@@ -46,7 +46,7 @@ public class AbstractHostTest {
     List<String> lines;
 
     abstractHost.setTimer(
-        new DatagramPacket(new byte[1], 1, InetAddress.getByName("localhost"), 8080), 123);
+        new DatagramPacket(new byte[1], 1, InetAddress.getByName("localhost"), 2345), 123);
     Thread.sleep(Parameters.MAX_RETRIES * Parameters.TIMEOUT_DURATION);
 
     try (BufferedReader reader = new BufferedReader(new FileReader(TEST_FILE_PATH))) {
@@ -62,7 +62,7 @@ public class AbstractHostTest {
 
     abstractHost.setTimer(
         new DatagramPacket(PacketBuilder.getAckPacket(1).getByteArray(),
-            PacketBuilder.getAckPacket(1).getSize(), InetAddress.getByName("localhost"), 8080),
+            PacketBuilder.getAckPacket(1).getSize(), InetAddress.getByName("localhost"), 7689),
         123);
     Thread.sleep(Parameters.TIMEOUT_DURATION + 10);
 

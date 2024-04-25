@@ -20,7 +20,7 @@ public class ClientTest {
 
   @BeforeEach
   void setup() throws UnknownHostException, SocketException {
-    client = new Client(InetAddress.getByName("localhost"), 1234);
+    client = new Client(InetAddress.getByName("localhost"), 6534);
   }
 
   @Test

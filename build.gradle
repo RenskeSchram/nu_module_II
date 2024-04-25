@@ -103,5 +103,3 @@ run {
 }
 
 deploy.dependsOn jar
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16

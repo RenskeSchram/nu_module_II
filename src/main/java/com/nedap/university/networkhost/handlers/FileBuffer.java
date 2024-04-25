@@ -38,7 +38,6 @@ public class FileBuffer {
    * @param payload retrieved payload with incoming File information.
    */
   public void initFileBuffer(Payload payload) {
-    //System.out.println("BUFFER initiated");
     String[] stringArray = payload.getStringArray();
     if (stringArray != null & !isInitialized) {
       this.dst_path = stringArray[1];
