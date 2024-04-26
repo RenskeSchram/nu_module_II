@@ -12,7 +12,7 @@ public class Parameters {
 
   // TimeOut
   public static final int TIMEOUT_DURATION = 1050;
-  public static final int MAX_RETRIES = 100;
+  public static final int MAX_RETRIES = 20;
   // Test file Paths
   public static final String TEST_SRC_FILE_PATH = "example_files/medium.pdf";
   public static final String TEST_DST_FILE_PATH = "example_files/test_file.pdf";

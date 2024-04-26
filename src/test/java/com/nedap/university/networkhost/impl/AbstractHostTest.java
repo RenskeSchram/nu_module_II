@@ -47,7 +47,7 @@ public class AbstractHostTest {
 
     abstractHost.setTimer(
         new DatagramPacket(new byte[1], 1, InetAddress.getByName("localhost"), 2345), 123);
-    Thread.sleep(Parameters.MAX_RETRIES * Parameters.TIMEOUT_DURATION);
+    Thread.sleep(Parameters.MAX_RETRIES * Parameters.TIMEOUT_DURATION + 100);
 
     try (BufferedReader reader = new BufferedReader(new FileReader(TEST_FILE_PATH))) {
       lines = reader.lines().toList();
